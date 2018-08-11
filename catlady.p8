@@ -66,21 +66,24 @@ end
 
 function update_player()
     local x = player.x
-    local y = player.y
     if btn(0) then
         x -= player.spd
     elseif btn(1) then
         x += player.spd
     end
-    
+
+    if not wall_area(x, player.y, 4, 4) then
+        player.x = x
+    end
+
+    local y = player.y
     if btn(2) then
         y -= player.spd
     elseif btn(3) then
         y += player.spd
     end
 
-    if not wall_area(x,y, 4, 4) then
-        player.x = x
+    if not wall_area(player.x, y, 4, 4) then
         player.y = y
     end
 end
