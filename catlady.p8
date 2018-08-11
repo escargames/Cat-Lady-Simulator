@@ -15,9 +15,10 @@ config = {
 
 function _init()
     state = "play"
-    player = {x = 64, y = 64, spd = 1}
-    cats = { {x = 32, y = 20, color = 1, dir = false, spd = 1},
-             {x = 40, y = 80, color = 2, dir = false, spd = 1}}
+    player = {x = 64, y = 64, spd = 2}
+    cats = { {x = 32, y = 20, color = 1, dir = false, spd = 1.5},
+             {x = 92, y = 40, color = 2, dir = false, spd = 1.5},
+             {x = 40, y = 80, color = 3, dir = false, spd = 1.5}}
 end
 
 function _update()
@@ -126,9 +127,16 @@ function draw_cats()
     palt(7, true)
     palt(0, false)
     foreach(cats, function(cat)
+        if cat.color == 1 then
+            pal(4,5) pal(9,6)
+        elseif cat.color == 2 then
+            pal(4,4) pal(9,4)
+        elseif cat.color == 3 then
+            pal(4,4) pal(9,9)
+        end
         spr(16, cat.x - 8, cat.y - 12, 2, 2, cat.dir)
     end)
-    palt()
+    pal()
 end
 
 function draw_ui()
