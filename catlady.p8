@@ -15,7 +15,7 @@ config = {
 
 function _init()
     state = "play"
-    player = {x = 64, y = 64, spd = 2}
+    player = {x = 64, y = 64, dir = true, spd = 2}
     cats = { {x = 32, y = 20, color = 1, dir = false, spd = 1.5},
              {x = 92, y = 40, color = 2, dir = false, spd = 1.5},
              {x = 40, y = 80, color = 3, dir = false, spd = 1.5}}
@@ -75,6 +75,7 @@ function update_player()
     end
 
     if not wall_area(x, player.y, 4, 4) then
+        if (player.x != x) player.dir = player.x < x
         player.x = x
     end
 
@@ -127,7 +128,7 @@ end
 function draw_play()
     palt(11, true)
     palt(0, false)
-    spr(18, player.x - 8, player.y - 12, 2, 2)
+    spr(18, player.x - 8, player.y - 12, 2, 2, player.dir)
     palt()
 end
 
