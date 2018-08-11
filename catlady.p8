@@ -8,27 +8,49 @@ __lua__
 -- standard pico-8 workflow
 --
 
+config = {
+    menu = {tl = "menu"},
+    play = {tl = "play"},
+    pause = {tl = "pause"},
+}
+
 function _init()
+    state = "menu"
     player = {x = 25, y = 25}
 end
 
 function _update()
-    if btn(0) then
-        player.x -= 1
-    elseif btn(1) then
-        player.x += 1
-    elseif btn(2) then
-        player.y -= 1
-    elseif btn(3) then
-        player.y += 1
+     if (state == "menu") then
+        update_menu()
+    elseif (state == "play") then
+        update_play()
+    elseif (state == "pause") then
+        update_pause()
     end
 end
 
 function _draw()
+    config[state].draw()
+    
     map(0,0,0,0,16,16)
     spr(3,player.x, player.y)
 end
 
+--
+-- play state handling
+--
+
+function update_play
+    update_player()
+end
+
+--
+-- player
+--
+
+function update_player()
+    
+end
 
 __gfx__
 00000000444444445555555588888888000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
