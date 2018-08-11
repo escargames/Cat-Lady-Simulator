@@ -83,7 +83,7 @@ function csprint(text, y, height, color)
     cosprint(text, x, y, height, color)
 end
 
--- timer
+-- cool timer
 
 function ctimer()
     sec -= 1/30
@@ -93,6 +93,19 @@ function ctimer()
     end
     if min < 0  then
         state = "pause"
+    end
+end
+
+-- cool tostring
+
+function ctostr(n, l)
+    local z = 10
+    if #tostr(n) < l then
+        for i = 1,l-#tostr(n) do
+            local z *= 10
+        end
+        return sub(tostr(z), 2, #tostr(z))..tostr(n)
+    else return tostr(n)
     end
 end
 
@@ -137,7 +150,7 @@ function begin_play()
     bowls = { { cx = 5, cy = 4, color = 0 },
               { cx = 2, cy = 10, color = 1 }}
     min=1
-    sec=30
+    sec=15
 end
 
 function update_play()
@@ -299,7 +312,7 @@ function draw_ui()
     palt(0, false)
     spr(20, 2, 110, 2, 2)
     palt()
-    cosprint(tostr(min)..":"..tostr(flr(sec)), 96, 4, 9, colortimer)
+    cosprint(tostr(min)..":"..ctostr(flr(sec), 2), 96, 4, 9, colortimer)
 end
 
 config.menu.draw = function ()
