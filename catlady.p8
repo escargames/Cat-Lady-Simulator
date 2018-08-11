@@ -16,7 +16,7 @@ config = {
 
 function _init()
     state = "play"
-    player = {x = 25, y = 25}
+    player = {x = 64, y = 64, spd = 1}
 end
 
 function _update()
@@ -30,10 +30,7 @@ function _update()
 end
 
 function _draw()
-    --config[state].draw()
-    
-    map(0,0,0,0,16,16)
-    spr(3,player.x, player.y)
+    config[state].draw()
 end
 
 --
@@ -49,15 +46,36 @@ end
 --
 
 function update_player()
-     if btn(0) then
-        player.x -= 1
+    if btn(0) then
+        player.x -= player.spd
     elseif btn(1) then
-        player.x += 1
-    elseif btn(2) then
-        player.y -= 1
-    elseif btn(3) then
-        player.y += 1
+        player.x += player.spd
     end
+    
+    if btn(2) then
+        player.y -= player.spd
+    elseif btn(3) then
+        player.y += player.spd
+    end
+end
+
+--
+-- drawing
+--
+function draw_world()
+    camera(player.x - 64, player.y - 64)
+    cls()
+    map(0,0,0,0,16,16)
+    camera()
+end
+
+function draw_play()
+    spr(3, player.x - 4, player.y - 4)
+end
+
+config.play.draw = function ()
+    draw_world()
+    draw_play()
 end
 
 __gfx__
