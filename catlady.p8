@@ -48,7 +48,7 @@ end
 --
 
 function wall(x,y)
-    return fget(mget(x,y),0)
+    return fget(mget(x/8,y/8), 0)
 end
 
 function wall_area(x,y,w,h)
