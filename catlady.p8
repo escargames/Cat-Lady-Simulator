@@ -3,7 +3,6 @@ version 16
 __lua__
 --by niarkou & sam
 
-
 --
 -- standard pico-8 workflow
 --
@@ -42,20 +41,43 @@ function update_play()
 end
 
 --
+-- walls
+--
+
+function wall(x,y)
+    return fget(mget(x,y),0)
+end
+
+function wall_area(x,y,w,h)
+    return
+        wall(x-w,y-h) or
+        wall(x+w,y-h) or
+        wall(x-w,y+h) or
+        wall(x+w,y+h)
+end
+
+--
 -- player
 --
 
 function update_player()
+    local x = player.x
+    local y = player.y
     if btn(0) then
-        player.x -= player.spd
+        x = player.x - player.spd
     elseif btn(1) then
-        player.x += player.spd
+        x = player.x + player.spd
     end
     
     if btn(2) then
-        player.y -= player.spd
+        y = player.y - player.spd
     elseif btn(3) then
-        player.y += player.spd
+        y = player.y + player.spd
+    end
+
+    if not wall_area(x,y, 4, 4) then
+        player.x = x
+        player.y = y
     end
 end
 
