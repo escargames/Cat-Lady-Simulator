@@ -144,6 +144,11 @@ function update_play()
 end
 
 function update_time()
+    if min < 1 and sec < 11 then
+        colortimer = 8
+    else
+        colortimer = 7
+    end
     ctimer(min, sec)
 end
 
@@ -292,7 +297,7 @@ function draw_ui()
     palt(0, false)
     spr(20, 2, 110, 2, 2)
     palt()
-    cosprint(tostr(min)..":"..tostr(flr(sec)), 96, 4, 9, 7)
+    cosprint(tostr(min)..":"..tostr(flr(sec)), 96, 4, 9, colortimer)
 end
 
 config.menu.draw = function ()
