@@ -16,7 +16,7 @@ config = {
 
 function _init()
     state = "play"
-    player = {x = 25, y = 25}
+    player = {x = 64, y = 64}
 end
 
 function _update()
@@ -30,10 +30,7 @@ function _update()
 end
 
 function _draw()
-    --config[state].draw()
-    
-    map(0,0,0,0,16,16)
-    spr(3,player.x, player.y)
+    config[state].draw()
 end
 
 --
@@ -58,6 +55,20 @@ function update_player()
     elseif btn(3) then
         player.y += 1
     end
+end
+
+--
+-- drawing
+--
+
+function draw_play()
+    spr(3, player.x - 4, player.y - 4)
+end
+
+config.play.draw = function ()
+    camera(player.x - 64, player.y - 64)
+    map(0,0,0,0,16,16)
+    draw_play()
 end
 
 __gfx__
