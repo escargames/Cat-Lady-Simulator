@@ -16,8 +16,8 @@ config = {
 function _init()
     state = "play"
     player = {x = 64, y = 64, spd = 1}
-    cats = { {x = 32, y = 20, color = 1},
-             {x = 40, y = 80, color = 2} }
+    cats = { {x = 32, y = 20, color = 1, dir = false, spd = 1},
+             {x = 40, y = 80, color = 2, dir = false, spd = 1}}
 end
 
 function _update()
@@ -67,15 +67,15 @@ function update_player()
     local x = player.x
     local y = player.y
     if btn(0) then
-        x = player.x - player.spd
+        x -= player.spd
     elseif btn(1) then
-        x = player.x + player.spd
+        x += player.spd
     end
     
     if btn(2) then
-        y = player.y - player.spd
+        y -= player.spd
     elseif btn(3) then
-        y = player.y + player.spd
+        y += player.spd
     end
 
     if not wall_area(x,y, 4, 4) then
@@ -89,6 +89,22 @@ end
 --
 
 function update_cats()
+    for i = 1,#cats do
+        local x = cats[i].x
+        local y = cats[i].y
+        if cats[i].dir then
+            x -= cats[i].spd
+        else
+            x += cats[i].spd
+        end
+
+        if not wall_area(x, y, 4, 4) then
+            cats[i].x = x
+            cats[i].y = y
+        else 
+            cats[i].dir = not cats[i].dir
+        end
+    end
 end
 
 --
@@ -110,7 +126,7 @@ function draw_cats()
     palt(7, true)
     palt(0, false)
     foreach(cats, function(cat)
-        spr(16, cat.x - 8, cat.y - 12, 2, 2)
+        spr(16, cat.x - 8, cat.y - 12, 2, 2, cat.dir)
     end)
     palt()
 end
