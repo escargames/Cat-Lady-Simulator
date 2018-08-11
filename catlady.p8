@@ -14,6 +14,7 @@ config = {
 }
 
 function _init()
+    cartdata("ldjam42")
     state = "play"
     player = {x = 64, y = 64, spd = 2}
     cats = { {x = 32, y = 20, color = 1, dir = false, spd = 1.5},
@@ -24,9 +25,9 @@ function _init()
 end
 
 function _update()
-     --if (state == "menu") then
-       -- update_menu()
-    if (state == "play") then
+    if (state == "menu") then
+        update_menu()
+    elseif (state == "play") then
         update_play()
     --elseif (state == "pause") then
         --update_pause()
@@ -35,6 +36,14 @@ end
 
 function _draw()
     config[state].draw()
+end
+
+--
+-- menu state handling
+--
+
+function update_menu()
+
 end
 
 --
