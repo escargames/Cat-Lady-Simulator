@@ -63,10 +63,8 @@ end
 -- drawing
 --
 function draw_world()
-    camera(player.x - 64, player.y - 64)
     cls()
     map(0,0,0,0,16,16)
-    camera()
 end
 
 function draw_play()
@@ -74,8 +72,10 @@ function draw_play()
 end
 
 config.play.draw = function ()
+    camera(player.x - 64, player.y - 64)
     draw_world()
     draw_play()
+    camera()
 end
 
 __gfx__
