@@ -149,7 +149,7 @@ function begin_play()
              {x = 96, y = 106, color = 1, dir = false, spd = 1.5, want = 2}}
     bowls = { { cx = 5, cy = 4, color = 0 },
               { cx = 2, cy = 10, color = 1 }}
-    min=1
+    min=0
     sec=15
 end
 
@@ -345,11 +345,13 @@ config.play.draw = function ()
 end
 
 config.pause.draw = function ()
+    draw_background()
     camera(player.x-64, player.y - 64)
     draw_world()
     draw_cats()
     camera()
     draw_pause()
+    
 end
 
 __gfx__
