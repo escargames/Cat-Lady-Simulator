@@ -31,8 +31,9 @@ function _update()
         update_menu()
     elseif (state == "play") then
         update_play()
-    --elseif (state == "pause") then
-        --update_pause()
+        update_time()
+    elseif (state == "pause") then
+        update_pause()
     end
 end
 
@@ -44,7 +45,7 @@ end
 -- cool functions
 --
 
--- cool outlined print
+-- cool print (outlined)
 
 function coprint(text, x, y)
     for i = -1,1 do
@@ -89,6 +90,19 @@ function csprint(text, y, height, color)
     cosprint(text, x, y, height, color)
 end
 
+-- timer
+
+function ctimer()
+    sec -= 1/30
+    if (sec <= 1) then 
+        min -= 1
+        sec += 60
+    end
+    if min < 0  then
+        state = "pause"
+    end
+end
+
 --
 -- menu state handling
 --
@@ -114,7 +128,9 @@ end
 
 function begin_play()
     player.x = 64
-    player.y =64
+    player.y = 64
+    min=1
+    sec=30
 end
 
 function update_play()
@@ -122,6 +138,16 @@ function update_play()
     update_cats()
 end
 
+function update_time()
+    ctimer(min, sec)
+end
+
+--
+-- pause state handling
+--
+
+function update_pause()
+end
 --
 -- collisions
 --
@@ -233,6 +259,10 @@ function draw_play()
     palt()
 end
 
+function draw_pause()
+    cprint("time out", 25, 7)
+end
+
 function draw_cats()
     foreach(cats, function(cat)
         palt(11, true)
@@ -262,7 +292,7 @@ function draw_ui()
     palt(0, false)
     spr(20, 2, 110, 2, 2)
     palt()
-    cosprint("1:30", 96, 4, 9, 7)
+    cosprint(tostr(min)..":"..tostr(flr(sec)), 96, 4, 9, 7)
 end
 
 config.menu.draw = function ()
@@ -280,6 +310,14 @@ config.play.draw = function ()
     draw_play()
     camera()
     draw_ui()
+end
+
+config.pause.draw = function ()
+    camera(player.x-64, player.y - 64)
+    draw_world()
+    draw_cats()
+    camera()
+    draw_pause()
 end
 
 __gfx__
