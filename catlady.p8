@@ -207,7 +207,7 @@ end
 --
 
 function draw_menu()
-    cprint("ldjam42", 30, 7)
+    csprint("ldjam42", 25, 10, 12)
     cprint("play", 50, 7)
     cprint("choose level", 70, 7)
     palt(11, true)
