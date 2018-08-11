@@ -16,7 +16,8 @@ config = {
 function _init()
     cartdata("ldjam42")
     state = "menu"
-    player = {x = 64, y = 64, dir = true, spd = 2, bob = 0, walk = 0}
+    level = 1
+    player = {x = 20, y = 42, dir = true, spd = 2, bob = 0, walk = 0}
     cats = { {x = 32, y = 20, color = 1, dir = false, spd = 1.5, want = 0},
              {x = 92, y = 40, color = 2, dir = false, spd = 1.5, want = 1},
              {x = 86, y = 86, color = 3, dir = false, spd = 1.5},
@@ -67,11 +68,27 @@ end
 
 function update_menu()
     update_cats()
+    if btnp(3) then
+        player.y = 62
+    elseif btnp(2) then
+        player.y = 42
+    end
+
+    if btn(4) and player.y == 42 then
+        state = "play"
+        begin_play()
+    end
+    player.bob += 0.08
 end
 
 --
 -- play state handling
 --
+
+function begin_play()
+    player.x = 64
+    player.y =64
+end
 
 function update_play()
     update_player()
@@ -163,15 +180,19 @@ end
 --
 
 function draw_menu()
-    map(0,48,0,0,16,16)
     cprint("ldjam42", 30, 7)
     cprint("play", 50, 7)
-    cprint("choose level", 60, 7)
+    cprint("choose level", 70, 7)
+    palt(11, true)
+    palt(0, false)
+    spr(130 + 2 * flr(player.walk % 2), player.x, player.y, 2, 2, not player.dir)
+    spr(128, player.x, player.y + sin(player.bob), 2, 2, not player.dir)
+    palt()
 end
 
 function draw_world()
     cls()
-    map(0,0,0,0,16,16)
+    map(0,0,0,0,128,128)
     foreach(bowls, function(b)
         spr(23 + b.color, b.cx * 8, b.cy * 8)
     end)
@@ -220,8 +241,11 @@ function draw_ui()
 end
 
 config.menu.draw = function ()
-    draw_menu()
+    camera(0, 48*8)
+    draw_world()
     draw_cats()
+    camera()
+    draw_menu()
 end
 
 config.play.draw = function ()
