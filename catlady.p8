@@ -175,7 +175,6 @@ function make_level(level)
                    { cx = 3.5, cy = 9.5, color = 1 },
                    { cx = 13.5, cy = 12.5, color = 2 },
                    { cx = 6.5, cy = 12.5, color = 3 } }
-
         fscoremin = 100
         -- fish in fridge #0, meat in fridge #1, cookie in cupboard #3
         sresources = { fish = {0}, meat = {1}, cookie = {3} }
@@ -195,7 +194,7 @@ function make_level(level)
         sresources = { fish = {0}, meat = {1} }
     end
 
-    return {display = sdisplay, timer = stimer, player = splayer, cats = scats, spd = sspd, bowls = sbowls, resources = sresources}
+    return {display = sdisplay, timer = stimer, player = splayer, cats = scats, spd = sspd, bowls = sbowls, scoremin = fscoremin, resources = sresources}
 end
 
 function contains(table, value)
