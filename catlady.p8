@@ -246,19 +246,47 @@ end
 function update_cats() 
     for i = 1,#cats do
         local cat = cats[i]
-        local x = cat.x
-        local y = cat.y
-        if cat.dir then
-            x -= cat.spd
-        else
-            x += cat.spd
-        end
+        if cat.plan then
+            -- if the cat has a plan, make it move in that direction
+            local x = cat.x
+            if cat.plan.dir == 0 then
+                cat.dir = true
+                x -= cat.spd
+            elseif cat.plan.dir == 1 then
+                cat.dir = false
+                x += cat.spd
+            end
 
-        if not wall_area(x, y, 3, 3) and max(abs(x - player.x), abs(y - player.y)) > 8 then
-            cat.x = x
-            cat.y = y
+            if not wall_area(x, cat.y, 3, 3) and max(abs(x - player.x), abs(cat.y - player.y)) > 8 then
+                cat.x = x
+            end
+
+            local y = cat.y
+            if cat.plan.dir == 2 then
+                y -= cat.spd
+            elseif cat.plan.dir == 3 then
+                y += cat.spd
+            end
+
+            if not wall_area(cat.x, y, 3, 3) and max(abs(cat.x - player.x), abs(y - player.y)) > 8 then
+                cat.y = y
+            end
+
+            -- at the end of the plan, remove the plan
+            cat.plan.length -= 1/30
+            if cat.plan.length < 0 then
+                cat.plan = nil
+            end
         else
-            cat.dir = not cat.dir
+            -- if it does not have a plan, maybe compute one
+            if rnd() > 0.5 then
+                cat.plan = { dir = flr(rnd(5)), length = rnd(2) }
+                for i=1,#bowls do
+                    if bowls[i].color == cat.want then
+                        cat.plan.x, cat.plan.y = bowls[i].cx * 8 + 4, bowls[i].cy * 8 + 4
+                    end
+                end
+            end
         end
     end
 end
@@ -284,7 +312,7 @@ function draw_world()
     map(0,0,0,0,128,64)
     palt(0, true)
     foreach(bowls, function(b)
-        spr(23 + b.color, b.cx * 8, b.cy * 8)
+        spr(66 + b.color, b.cx * 8, b.cy * 8)
     end)
 end
 
@@ -318,12 +346,18 @@ function draw_cats()
         end
         spr(72, cat.x - 8, cat.y - 12, 2, 2, cat.dir)
 
+        -- if the cat wants something, draw a bubble
         if cat.want then
             local x, y = cat.x - 8, cat.y - 22
             spr(64, x, y, 2, 2, cat.dir)
             palt(11, false)
             palt(0, true)
             spr(82 + cat.want, x + 4, y + 1, 1, 1, cat.dir)
+        end
+
+        -- if the cat has a plan, draw a line
+        if cat.plan and cat.plan.x then
+            line(cat.x, cat.y, cat.plan.x, cat.plan.y, rnd(15))
         end
     end)
     pal()
