@@ -143,8 +143,7 @@ end
 --
 
 function begin_play()
-    level = { {timer = {min = 1, sec = 15}},
-              {timer = {min = 1, sec = 15}} }
+    level = {timer = {min = 1, sec = 15}}
     player = {x = 64, y = 64, dir = false, spd = 2, bob = 0, walk = 0}
     cats = { {x = 26, y = 60, color = 1, dir = false, spd = 1.5, want = 0},
              {x = 92, y = 40, color = 2, dir = false, spd = 1.5, want = 1},
