@@ -118,9 +118,11 @@ end
 --
 
 function begin_menu()
-    player = {x = 28, y = 54, dir = false, spd = 2, bob = 0, walk = 0}
+    level = 0
+    desc = make_level(level)
+    player = {x = desc.player.x, y = desc.player.y, dir = desc.player.dir, spd = desc.player.spd, bob = 0, walk = 0}
+    display = {cx = desc.display.cx, cy = desc.display.cy, height = desc.display.height, width = desc.display.width}
     cats = {}
-    bowls = {}
 end
 
 function update_menu()
@@ -148,8 +150,16 @@ end
 --
 
 function make_level(level)
-    local splayer, scats, sbowls
+    local sdisplay, stimer, splayer, scats, sspd, sbowls
+    if level == 0 then
+        sdisplay = {cx = 0, cy = 48, width = 16, height = 16}
+        splayer = {x = 28, y = 54, dir = false, spd = 2}
+        scats = {}
+        sbowls = {}
+    end
+
     if level == 1 then
+        sdisplay = {cx = 0, cy = 0, width = 16, height = 16}
         stimer = {min = 1, sec = 15}
         splayer = {x = 64, y = 64, dir = false, spd = 2}
         scats = { {x = 26, y = 60},
@@ -164,8 +174,9 @@ function make_level(level)
     end
 
     if level == 2 then
+        sdisplay = {cx = 16, cy = 0, width = 12, height = 12}
         stimer = {min = 1, sec = 30}
-        splayer = {x = 26*8, y = 7*8, dir = false, spd = 2}
+        splayer = {x = 22*8, y = 5.2*8, dir = false, spd = 2}
         scats = { {x = 19*8, y = 4*8, color = 1, dir = false, want = 0},
                   {x = 20*8, y = 9*8, color = 2, dir = false, want = 1} }
         sspd = 1
@@ -173,11 +184,12 @@ function make_level(level)
                    {cx = 26, cy = 9, color = 1} }
     end
 
-    return {timer = stimer, player = splayer, cats = scats, spd = sspd, bowls = sbowls}
+    return {display = sdisplay, timer = stimer, player = splayer, cats = scats, spd = sspd, bowls = sbowls}
 end
 
 function begin_play()
     desc = make_level(level)
+    display = {cx = desc.display.cx, cy = desc.display.cy, width = desc.display.width, height = desc.display.height}
     timer = {min = desc.timer.min, sec = desc.timer.sec}
     player = {x = desc.player.x, y = desc.player.y, dir = desc.player.dir, spd = desc.player.spd, bob = 0, walk = 0}
     
@@ -352,7 +364,7 @@ end
 
 function draw_world()
     palt(0, false)
-    map(0,0,0,0,128,64)
+    map(display.cx, display.cy, display.cx*8, display.cy*8, display.height, display.width)
     palt(0, true)
     foreach(bowls, function(b)
         spr(66 + b.color, b.cx * 8, b.cy * 8)
