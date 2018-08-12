@@ -16,6 +16,7 @@ config = {
 function _init()
     cartdata("ldjam42")
     state = "menu"
+    flevel = 2
     begin_menu()
     pause_menu()
 end
@@ -121,6 +122,7 @@ end
 function begin_menu()
     level = 0
     desc = make_level(level)
+    chooselevel = false
     player = {x = desc.player.x, y = desc.player.y, dir = desc.player.dir, spd = desc.player.spd, bob = 0, walk = 0.2}
     display = {cx = desc.display.cx, cy = desc.display.cy, height = desc.display.height, width = desc.display.width}
     cats = {}
@@ -137,8 +139,13 @@ function update_menu()
     if btnp(4) and player.y == 54 then
         state = "play"
         level = 1
+        chooselevel = false
         begin_play()
     elseif btnp(4) and player.y == 74 then
+        chooselevel = true
+    end
+
+    if btn(4) and player.y == 84 then
         state="play"
         level = 2
         begin_play()
@@ -316,9 +323,14 @@ end
 function update_pause()
     if score >= scoremin then
         if btnp(4) then
-            level += 1
-            state = "play"
-            begin_play()
+            if level == flevel then
+                state = "menu"
+                begin_menu()
+            else
+                level += 1
+                state = "play"
+                begin_play()
+            end
         end
     elseif btnp(4) then
         level = 0
@@ -465,6 +477,15 @@ function draw_menu()
     cprint("choose level", 70, 7)
 end
 
+function draw_chooselevel()
+    if chooselevel then
+        for i = 1, flevel do
+            cosprint(tostr(i), 64 - (flevel - 1)*10 + (i - 1)*20, 80, 6, 7)
+        end
+    rect(64 - (flevel - 1)*10 - 3, 80-3, 64 - (flevel - 1)*10 + 5, 80+7, 14)
+    end
+end
+
 function draw_world()
     palt(0, false)
     map(display.cx, display.cy, display.cx*8, display.cy*8, display.height, display.width)
@@ -523,7 +544,10 @@ end
 function draw_pause()
     csprint("time out", 25, 9, 14)
     if score >= scoremin then
-        cprint("next level", 50, 7)
+        if level == flevel then
+            cprint("you win", 50, 7)
+        else cprint("next level", 50, 7)
+        end
     else
         cprint("menu", 50, 7)
     end
@@ -592,7 +616,8 @@ config.menu.draw = function ()
     draw_cats()
     camera()
     draw_menu()
-    draw_grandma()
+    draw_grandma() 
+    draw_chooselevel()
 end
 
 config.play.draw = function ()
@@ -613,7 +638,7 @@ config.pause.draw = function ()
     camera()
     draw_ui()
     draw_pause()
-    draw_grandma() 
+    draw_grandma()
 end
 
 __gfx__
