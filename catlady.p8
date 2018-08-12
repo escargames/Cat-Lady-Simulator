@@ -148,12 +148,12 @@ function make_level(level)
     if level == 1 then
         stimer = {min = 1, sec = 15}
         splayer = {x = 64, y = 64, dir = false, spd = 2}
-        scats = { {x = 26, y = 60, color = 1, dir = false, want = 0},
-             {x = 92, y = 40, color = 2, dir = false, want = 1},
-             {x = 86, y = 86, color = 3, dir = false},
-             {x = 40, y = 80, color = 2, dir = false},
-             {x = 36, y = 98, color = 1, dir = false},
-             {x = 100, y = 106, color = 1, dir = false, want = 2} }
+        scats = { {x = 26, y = 60},
+                  {x = 92, y = 40},
+                  {x = 86, y = 86},
+                  {x = 40, y = 80},
+                  {x = 36, y = 98},
+                  {x = 100, y = 106} }
         sspd = 1
         sbowls = { { cx = 1.5, cy = 2.5, color = 0 },
                    { cx = 3.5, cy = 9.5, color = 1 } }
@@ -162,15 +162,11 @@ function make_level(level)
 end
 
 function begin_play()
-    local desc = make_level(level)
+    desc = make_level(level)
     timer = {min = desc.timer.min, sec = desc.timer.sec}
     player = {x = desc.player.x, y = desc.player.y, dir = desc.player.dir, spd = desc.player.spd, bob = 0, walk = 0}
     
     cats = {}
-    for i = 1, #desc.cats do
-        add(cats, {x = desc.cats[i].x, y = desc.cats[i].y, color = desc.cats[i].color, dir = desc.cats[i].dir, want = desc.cats[i].want})
-    end
-
     spd = desc.spd
 
     bowls = {}
@@ -180,6 +176,9 @@ function begin_play()
 end
 
 function update_play()
+    -- add a cat by pressing tab
+    if btnp(4, 1) then add_cat() end
+
     update_player()
     update_cats()
 end
@@ -264,6 +263,13 @@ end
 --
 -- cats
 --
+
+function add_cat()
+    -- spawn a cat at a random location found in desc.cats
+    local startid = 1 + flr(rnd(#desc.cats))
+    local catdesc = desc.cats[startid]
+    add(cats, {x = catdesc.x, y = catdesc.y, color = flr(1 + rnd(3)), dir = rnd() > 0.5})
+end
 
 function update_cats() 
     for i = 1,#cats do
