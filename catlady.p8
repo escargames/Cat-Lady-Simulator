@@ -196,7 +196,7 @@ function begin_play()
     desc = make_level(level)
     display = {cx = desc.display.cx, cy = desc.display.cy, width = desc.display.width, height = desc.display.height}
     timer = {min = desc.timer.min, sec = desc.timer.sec}
-    player = {x = desc.player.x, y = desc.player.y, dir = desc.player.dir, spd = desc.player.spd, bob = 0, walk = 0}
+    player = {x = desc.player.x, y = desc.player.y, dir = desc.player.dir, spd = desc.player.spd, carry = 1, bob = 0, walk = 0}
     
     cats = {}
     spd = desc.spd
@@ -428,13 +428,20 @@ function draw_grandma()
     palt(11, true)
     palt(0, false)
     local sw, cw = sin(player.walk / 4), cos(player.walk / 4)
-    spr(100, player.x - 4 - 3 * sw, player.y - 6 + 2 * abs(cw))
+    if (not player.carry) spr(100, player.x - 4 - 3 * sw, player.y - 6 + 2 * abs(cw))
     spr(116, player.x - 4 - 3 * cw, player.y - 3 + 1.5 * abs(sw))
     spr(98 + 16 * flr(player.walk % 2), player.x - 8, player.y - 4, 2, 1, player.dir)
     spr(116, player.x - 4 + 3 * cw, player.y - 3 + 1.5 * abs(sw))
-    spr(100, player.x - 4 + 3 * sw, player.y - 6 + 2 * abs(cw))
+    if (not player.carry) spr(100, player.x - 4 + 3 * sw, player.y - 6 + 2 * abs(cw))
+    if player.carry then
+        spr(100, player.x - 8, player.y - 9 - 2 * abs(cw), 1, 1, false, true)
+        spr(100, player.x + 0, player.y - 11 + 2 * abs(cw), 1, 1, false, true)
+    end
     spr(96, player.x - 8, player.y - 12 + sin(player.bob), 2, 2, player.dir)
     palt()
+    if player.carry then
+        spr(82 + player.carry, player.x - 4, player.y - 15 + sw, 1, 1, player.dir)
+    end
 end
 
 function draw_pause()
