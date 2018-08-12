@@ -213,7 +213,7 @@ function update_player()
         x += player.spd
     end
 
-    if not wall_area(x, player.y, 4, 4) and not has_cat_nearby(x, player.y) then
+    if not wall_area(x, player.y, 3, 3) and not has_cat_nearby(x, player.y) then
         if (player.x != x) walk = true player.dir = player.x > x
         player.x = x
     end
@@ -225,7 +225,7 @@ function update_player()
         y += player.spd
     end
 
-    if not wall_area(player.x, y, 4, 4) and not has_cat_nearby(player.x, y) then
+    if not wall_area(player.x, y, 3, 3) and not has_cat_nearby(player.x, y) then
         if (player.y != y) walk = true
         player.y = y
     end
@@ -248,7 +248,7 @@ function update_cats()
             x += cats[i].spd
         end
 
-        if not wall_area(x, y, 4, 4) and max(abs(x - player.x), abs(y - player.y)) > 8 then
+        if not wall_area(x, y, 3, 3) and max(abs(x - player.x), abs(y - player.y)) > 8 then
             cats[i].x = x
             cats[i].y = y
         else
