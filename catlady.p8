@@ -408,9 +408,9 @@ function update_player()
     -- if putting something in a bowl...
     if btnp(4) and player.carry then
         for i=1,#bowls do
-            local dx = povx - bowls[i].cx * 8 + 4
-            local dy = povy - bowls[i].cy * 8 + 4
-            if dx / 128 * dx + dy / 128 * dy < 6 * 6 / 128 then
+            local dx = povx - (bowls[i].cx * 8 + 4)
+            local dy = povy - (bowls[i].cy * 8 + 4)
+            if dx / 128 * dx + dy / 128 * dy < 8 * 8 / 128 then
                 bowls[i].color = player.carry
                 player.carry = nil
                 break
