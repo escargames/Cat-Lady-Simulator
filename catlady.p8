@@ -153,7 +153,7 @@ function make_level(level)
     local sdisplay, stimer, splayer, scats, sspd, sbowls, sfridges
     if level == 0 then
         sdisplay = {cx = 0, cy = 48, width = 16, height = 16}
-        splayer = {x = 28, y = 54, dir = false, spd = 2}
+        splayer = {x = 28, y = 54, dir = 1, spd = 2}
         scats = {{x = 64, y = 110}}
         sbowls = {}
         sfridges = {}
@@ -162,7 +162,7 @@ function make_level(level)
     if level == 1 then
         sdisplay = {cx = 0, cy = 0, width = 16, height = 16}
         stimer = {min = 1, sec = 15}
-        splayer = {x = 64, y = 64, dir = false, spd = 2}
+        splayer = {x = 64, y = 64, dir = 1, spd = 2}
         scats = { {x = 26, y = 60},
                   {x = 92, y = 40},
                   {x = 86, y = 86},
@@ -180,9 +180,9 @@ function make_level(level)
     if level == 2 then
         sdisplay = {cx = 16, cy = 0, width = 12, height = 12}
         stimer = {min = 1, sec = 30}
-        splayer = {x = 22*8, y = 5.2*8, dir = false, spd = 2}
-        scats = { {x = 19*8, y = 4*8, color = 1, dir = false, want = 0},
-                  {x = 20*8, y = 9*8, color = 2, dir = false, want = 1} }
+        splayer = {x = 22*8, y = 5.2*8, dir = 1, spd = 2}
+        scats = { {x = 19*8, y = 4*8, color = 1, dir = 1, want = 0},
+                  {x = 20*8, y = 9*8, color = 2, dir = 1, want = 1} }
         sspd = 1
         sbowls = { {cx = 23.5, cy = 5.5, color = 0},
                    {cx = 26, cy = 9, color = 1} }
@@ -267,6 +267,13 @@ function compute_paths()
     end
 end
 
+function dir_x(dir)
+    if dir == 0 then
+        return true
+    else return false
+    end
+end
+
 --
 -- pause state handling
 --
@@ -315,7 +322,7 @@ function update_player()
     end
 
     if not wall_area(x, player.y, 3, 3) and not has_cat_nearby(x, player.y) then
-        if (player.x != x) walk = true player.dir = player.x > x
+        if (player.x != x) walk = true player.dir = (player.x > x) and 0 or 1
         player.x = x
     end
 
@@ -355,10 +362,10 @@ function update_cats()
             -- if the cat has a plan, make it move in that direction
             local x = cat.x
             if cat.plan.dir == 0 then
-                cat.dir = true
+                cat.dir = 0
                 x -= spd
             elseif cat.plan.dir == 1 then
-                cat.dir = false
+                cat.dir = 1
                 x += spd
             end
 
@@ -430,17 +437,17 @@ function draw_grandma()
     local sw, cw = sin(player.walk / 4), cos(player.walk / 4)
     if (not player.carry) spr(100, player.x - 4 - 3 * sw, player.y - 6 + 2 * abs(cw))
     spr(116, player.x - 4 - 3 * cw, player.y - 3 + 1.5 * abs(sw))
-    spr(98 + 16 * flr(player.walk % 2), player.x - 8, player.y - 4, 2, 1, player.dir)
+    spr(98 + 16 * flr(player.walk % 2), player.x - 8, player.y - 4, 2, 1, dir_x(player.dir))
     spr(116, player.x - 4 + 3 * cw, player.y - 3 + 1.5 * abs(sw))
     if (not player.carry) spr(100, player.x - 4 + 3 * sw, player.y - 6 + 2 * abs(cw))
     if player.carry then
         spr(100, player.x - 8, player.y - 9 - 2 * abs(cw), 1, 1, false, true)
         spr(100, player.x + 0, player.y - 11 + 2 * abs(cw), 1, 1, false, true)
     end
-    spr(96, player.x - 8, player.y - 12 + sin(player.bob), 2, 2, player.dir)
+    spr(96, player.x - 8, player.y - 12 + sin(player.bob), 2, 2, dir_x(player.dir))
     palt()
     if player.carry then
-        spr(82 + player.carry, player.x - 4, player.y - 15 + sw, 1, 1, player.dir)
+        spr(82 + player.carry, player.x - 4, player.y - 15 + sw, 1, 1, dir_x(player.dir))
     end
 end
 
@@ -459,7 +466,7 @@ function draw_cats()
         elseif cat.color == 3 then
             pal(4,4) pal(9,9)
         end
-        spr(72, cat.x - 8, cat.y - 12, 2, 2, cat.dir)
+        spr(72, cat.x - 8, cat.y - 12, 2, 2, dir_x(cat.dir))
 
         -- if the cat wants something, draw a bubble
         if cat.want then
@@ -467,7 +474,7 @@ function draw_cats()
             spr(64, x, y, 2, 2, cat.dir)
             palt(11, false)
             palt(0, true)
-            spr(82 + cat.want, x + 4, y + 1, 1, 1, cat.dir)
+            spr(82 + cat.want, x + 4, y + 1, 1, 1, dir_x(cat.dir))
         end
 
         -- debug: if the cat has a plan, draw a line
