@@ -178,7 +178,8 @@ end
 --
 
 function wall(x,y)
-    return fget(mget(x/8,y/8), 0)
+    local m = mget(x/8,y/8)
+    return m==0 or fget(m,0)
 end
 
 function wall_area(x,y,w,h)
