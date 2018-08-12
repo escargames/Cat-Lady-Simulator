@@ -170,7 +170,9 @@ function make_level(level)
                   {x = 100, y = 106} }
         sspd = 1
         sbowls = { { cx = 1.5, cy = 2.5, color = 0 },
-                   { cx = 3.5, cy = 9.5, color = 1 } }
+                   { cx = 3.5, cy = 9.5, color = 1 },
+                   { cx = 13.5, cy = 12.5, color = 2 },
+                   { cx = 6.5, cy = 12.5, color = 3 } }
     end
 
     if level == 2 then
@@ -200,6 +202,8 @@ function begin_play()
     for i = 1, #desc.bowls do
         add(bowls, {cx = desc.bowls[i].cx, cy = desc.bowls[i].cy, color = desc.bowls[i].color})
     end
+
+    compute_paths()
 end
 
 function update_play()
@@ -217,6 +221,36 @@ function update_time()
         colortimer = 7
     end
     ctimer(timer)
+end
+
+function compute_paths()
+    paths = {}
+    for i = 1, #bowls do
+        local grid = {}
+        local dist, bcell = 0, flr(desc.bowls[i].cx) + 128 * flr(desc.bowls[i].cy)
+        local tovisit, visited = {bcell, bcell+1, bcell+128, bcell+129}, {}
+        while #tovisit > 0 do
+            -- store distance for all cells to visit
+            for j = 1, #tovisit do
+                grid[tovisit[j]] = dist
+                visited[tovisit[j]] = true
+            end
+            -- find new cells to visit
+            local nxt = {}
+            for j = 1, #tovisit do
+                local cell = tovisit[j]
+                local x, y = cell % 128 * 8, flr(cell / 128) * 8
+                if not visited[cell - 128] and not wall(x, y - 8) then nxt[cell - 128] = true end
+                if not visited[cell + 128] and not wall(x, y + 8) then nxt[cell + 128] = true end
+                if not visited[cell - 1] and not wall(x - 8, y) then nxt[cell - 1] = true end
+                if not visited[cell + 1] and not wall(x + 8, y) then nxt[cell + 1] = true end
+            end
+            tovisit = {}
+            for k, _ in pairs(nxt) do add(tovisit, k) end
+            dist += 1
+        end
+        paths[i] = grid
+    end
 end
 
 --
@@ -295,7 +329,9 @@ function add_cat()
     -- spawn a cat at a random location found in desc.cats
     local startid = 1 + flr(rnd(#desc.cats))
     local catdesc = desc.cats[startid]
-    add(cats, {x = catdesc.x, y = catdesc.y, color = flr(1 + rnd(3)), dir = rnd() > 0.5})
+    local cat = {x = catdesc.x, y = catdesc.y, color = flr(1 + rnd(3)), dir = rnd() > 0.5}
+    cat.want = flr(rnd(3))
+    add(cats, cat)
 end
 
 function update_cats() 
@@ -338,7 +374,7 @@ function update_cats()
                 cat.plan = { dir = flr(rnd(5)), length = rnd(2) }
                 for i=1,#bowls do
                     if bowls[i].color == cat.want then
-                        cat.plan.x, cat.plan.y = bowls[i].cx * 8 + 4, bowls[i].cy * 8 + 4
+                        cat.plan.bowl, cat.plan.x, cat.plan.y = i, bowls[i].cx * 8 + 4, bowls[i].cy * 8 + 4
                     end
                 end
             end
@@ -410,9 +446,21 @@ function draw_cats()
             spr(82 + cat.want, x + 4, y + 1, 1, 1, cat.dir)
         end
 
-        -- if the cat has a plan, draw a line
-        if cat.plan and cat.plan.x then
-            line(cat.x, cat.y, cat.plan.x, cat.plan.y, rnd(15))
+        -- debug: if the cat has a plan, draw a line
+        if cat.plan and cat.plan.bowl then
+            local col = 12 + cat.plan.bowl
+            local d = paths[cat.plan.bowl]
+            local cell = flr(cat.x / 8) + 128 * flr(cat.y / 8)
+            while cell and d[cell] and d[cell] > 0 do
+                local nextcell = nil
+                if ((d[cell + 1] or 1000) < d[cell]) nextcell = cell + 1
+                if ((d[cell - 1] or 1000) < d[cell]) nextcell = cell - 1
+                if ((d[cell + 128] or 1000) < d[cell]) nextcell = cell + 128
+                if ((d[cell - 128] or 1000) < d[cell]) nextcell = cell - 128
+                if (nextcell) line(cell % 128 * 8 + 4, flr(cell / 128) * 8 + 4, nextcell % 128 * 8 + 4, flr(nextcell / 128) * 8 + 4, col)
+                cell = nextcell
+            end
+            --line(cat.x, cat.y, cat.plan.x, cat.plan.y, rnd(15))
         end
     end)
     pal()
