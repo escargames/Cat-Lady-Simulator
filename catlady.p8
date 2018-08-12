@@ -156,7 +156,7 @@ function make_level(level)
         splayer = {x = 28, y = 54, dir = 1, spd = 2}
         scats = {{x = 64, y = 110}}
         sbowls = {}
-        sfridges = {}
+        sresources = {}
     end
 
     if level == 1 then
@@ -174,7 +174,8 @@ function make_level(level)
                    { cx = 3.5, cy = 9.5, color = 1 },
                    { cx = 13.5, cy = 12.5, color = 2 },
                    { cx = 6.5, cy = 12.5, color = 3 } }
-        sfridges = { 0, 1 }
+        -- fish in fridge #0, meat in fridge #1, cookie in cupboard #3
+        sresources = { fish = {0}, meat = {1}, cookie = {3} }
     end
 
     if level == 2 then
@@ -186,10 +187,14 @@ function make_level(level)
         sspd = 1
         sbowls = { {cx = 23.5, cy = 5.5, color = 0},
                    {cx = 26, cy = 9, color = 1} }
-        sfridges = { 0, 1 }
+        sresources = { fish = {0}, meat = {1} }
     end
 
-    return {display = sdisplay, timer = stimer, player = splayer, cats = scats, spd = sspd, bowls = sbowls, fridges = sfridges}
+    return {display = sdisplay, timer = stimer, player = splayer, cats = scats, spd = sspd, bowls = sbowls, resources = sresources}
+end
+
+function contains(table, value)
+    for _,v in pairs(table) do if v == value then return true end end return false
 end
 
 function begin_play()
@@ -206,17 +211,7 @@ function begin_play()
         add(bowls, {cx = desc.bowls[i].cx, cy = desc.bowls[i].cy, color = desc.bowls[i].color})
     end
 
-    -- find all fridges in the map and fill the fridges table
-    fridges = {}
-    for i=desc.display.cx,desc.display.cx+desc.display.width do
-        for j=desc.display.cy,desc.display.cy+desc.display.height do
-            local tile = mget(i,j)
-            if tile == 50 and #fridges < #desc.fridges then
-                add(fridges, {x = i * 8 + 5, y = j * 8 - 7, color = desc.fridges[1 + #fridges]})
-            end
-        end
-    end
-
+    compute_resources()
     compute_paths()
 end
 
@@ -235,6 +230,32 @@ function update_time()
         colortimer = 7
     end
     ctimer(timer)
+end
+
+function compute_resources()
+    -- find all fridges and sinks in the map and fill the resources table
+    resources = {}
+    local nfridges, ncupboards = 0, 0
+    for j=desc.display.cy,desc.display.cy+desc.display.height do
+        for i=desc.display.cx,desc.display.cx+desc.display.width do
+            local tile = mget(i,j)
+            if tile == 50 then -- this is a fridge
+                if contains(desc.resources.meat, nfridges) then
+                    add(resources, {x = i * 8 + 5, y = j * 8 - 7, color = 0})
+                elseif contains(desc.resources.fish, nfridges) then
+                    add(resources, {x = i * 8 + 5, y = j * 8 - 7, color = 1})
+                end
+                nfridges += 1
+            elseif tile == 26 then -- this is a sink
+                add(resources, {x = i * 8 + 5, y = j * 8 - 3, color = 2})
+            elseif (tile == 36 or tile == 39) then -- this is a cupboard
+                if contains(desc.resources.cookie, ncupboards) then
+                    add(resources, {x = i * 8 + 4, y = j * 8 - 10, color = 3})
+                end
+                ncupboards += 1
+            end
+        end
+    end
 end
 
 function compute_paths()
@@ -426,8 +447,8 @@ function draw_world()
     foreach(bowls, function(b)
         spr(66 + b.color, b.cx * 8, b.cy * 8)
     end)
-    foreach(fridges, function(f)
-        spr(82 + f.color, f.x, f.y)
+    foreach(resources, function(r)
+        spr(82 + r.color, r.x, r.y)
     end)
 end
 
