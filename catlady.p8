@@ -91,7 +91,7 @@ function ctimer(t)
         t.sec -= 1/30
     end
 
-    if (t.sec <= 1) then 
+    if (t.sec <= 0) then 
         t.min -= 1
         t.sec += 60
     end
@@ -162,7 +162,7 @@ function make_level(level)
 
     if level == 1 then
         sdisplay = {cx = 0, cy = 0, width = 16, height = 16}
-        stimer = {min = 0, sec = 5}
+        stimer = {min = 1, sec = 5}
         splayer = {x = 64, y = 64, dir = 1, spd = 2}
         scats = { {x = 26, y = 60},
                   {x = 92, y = 40},
@@ -214,7 +214,7 @@ function begin_play()
     for i = 1, #desc.bowls do
         add(bowls, {cx = desc.bowls[i].cx, cy = desc.bowls[i].cy, color = desc.bowls[i].color})
     end
-    score = 90
+    score = 110
     scoremin = desc.scoremin
     compute_resources()
     compute_paths()
