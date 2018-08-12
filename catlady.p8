@@ -3,20 +3,21 @@ version 16
 __lua__
 --by niarkou & sam
 
---
--- standard pico-8 workflow
---
-
 config = {
     menu = {tl = "menu"},
     play = {tl = "play"},
     pause = {tl = "pause"},
 }
 
+--
+-- standard pico-8 workflow
+--
+
 function _init()
     cartdata("ldjam42")
     state = "menu"
     begin_menu()
+    pause_menu()
 end
 
 function _update()
@@ -102,7 +103,7 @@ function ctimer()
     end
 end
 
--- cool tostring
+-- cool tostring (adding "0")
 
 function ctostr(n, l)
     local a = tostr(n)
@@ -173,6 +174,10 @@ end
 --
 -- pause state handling
 --
+
+function pause_menu()
+    menuitem(2, "menu", function() state = "menu" begin_menu() end)
+end
 
 function update_pause()
 end
