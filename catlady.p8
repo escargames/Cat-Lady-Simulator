@@ -152,12 +152,12 @@ function make_level(level)
     if level == 1 then
         stimer = {min = 1, sec = 15}
         splayer = {x = 64, y = 64, dir = false, spd = 2}
-        scats = { {x = 26, y = 60, color = 1, dir = false, want = 0},
-             {x = 92, y = 40, color = 2, dir = false, want = 1},
-             {x = 86, y = 86, color = 3, dir = false},
-             {x = 40, y = 80, color = 2, dir = false},
-             {x = 36, y = 98, color = 1, dir = false},
-             {x = 100, y = 106, color = 1, dir = false, want = 2} }
+        scats = { {x = 26, y = 60},
+                  {x = 92, y = 40},
+                  {x = 86, y = 86},
+                  {x = 40, y = 80},
+                  {x = 36, y = 98},
+                  {x = 100, y = 106} }
         sspd = 1
         sbowls = { { cx = 1.5, cy = 2.5, color = 0 },
                    { cx = 3.5, cy = 9.5, color = 1 } }
@@ -177,15 +177,11 @@ function make_level(level)
 end
 
 function begin_play()
-    local desc = make_level(level)
+    desc = make_level(level)
     timer = {min = desc.timer.min, sec = desc.timer.sec}
     player = {x = desc.player.x, y = desc.player.y, dir = desc.player.dir, spd = desc.player.spd, bob = 0, walk = 0}
     
     cats = {}
-    for i = 1, #desc.cats do
-        add(cats, {x = desc.cats[i].x, y = desc.cats[i].y, color = desc.cats[i].color, dir = desc.cats[i].dir, want = desc.cats[i].want})
-    end
-
     spd = desc.spd
 
     bowls = {}
@@ -195,6 +191,9 @@ function begin_play()
 end
 
 function update_play()
+    -- add a cat by pressing tab
+    if btnp(4, 1) then add_cat() end
+
     update_player()
     update_cats()
 end
@@ -280,22 +279,57 @@ end
 -- cats
 --
 
+function add_cat()
+    -- spawn a cat at a random location found in desc.cats
+    local startid = 1 + flr(rnd(#desc.cats))
+    local catdesc = desc.cats[startid]
+    add(cats, {x = catdesc.x, y = catdesc.y, color = flr(1 + rnd(3)), dir = rnd() > 0.5})
+end
+
 function update_cats() 
     for i = 1,#cats do
         local cat = cats[i]
-        local x = cat.x
-        local y = cat.y
-        if cat.dir then
-            x -= spd
-        else
-            x += spd
-        end
+        if cat.plan then
+            -- if the cat has a plan, make it move in that direction
+            local x = cat.x
+            if cat.plan.dir == 0 then
+                cat.dir = true
+                x -= spd
+            elseif cat.plan.dir == 1 then
+                cat.dir = false
+                x += spd
+            end
 
-        if not wall_area(x, y, 3, 3) and max(abs(x - player.x), abs(y - player.y)) > 8 then
-            cat.x = x
-            cat.y = y
+            if not wall_area(x, cat.y, 3, 3) and max(abs(x - player.x), abs(cat.y - player.y)) > 8 then
+                cat.x = x
+            end
+
+            local y = cat.y
+            if cat.plan.dir == 2 then
+                y -= spd
+            elseif cat.plan.dir == 3 then
+                y += spd
+            end
+
+            if not wall_area(cat.x, y, 3, 3) and max(abs(cat.x - player.x), abs(y - player.y)) > 8 then
+                cat.y = y
+            end
+
+            -- at the end of the plan, remove the plan
+            cat.plan.length -= 1/30
+            if cat.plan.length < 0 then
+                cat.plan = nil
+            end
         else
-            cat.dir = not cat.dir
+            -- if it does not have a plan, maybe compute one
+            if rnd() > 0.5 then
+                cat.plan = { dir = flr(rnd(5)), length = rnd(2) }
+                for i=1,#bowls do
+                    if bowls[i].color == cat.want then
+                        cat.plan.x, cat.plan.y = bowls[i].cx * 8 + 4, bowls[i].cy * 8 + 4
+                    end
+                end
+            end
         end
     end
 end
@@ -321,7 +355,7 @@ function draw_world()
     map(0,0,0,0,128,64)
     palt(0, true)
     foreach(bowls, function(b)
-        spr(23 + b.color, b.cx * 8, b.cy * 8)
+        spr(66 + b.color, b.cx * 8, b.cy * 8)
     end)
 end
 
@@ -355,12 +389,18 @@ function draw_cats()
         end
         spr(72, cat.x - 8, cat.y - 12, 2, 2, cat.dir)
 
+        -- if the cat wants something, draw a bubble
         if cat.want then
             local x, y = cat.x - 8, cat.y - 22
             spr(64, x, y, 2, 2, cat.dir)
             palt(11, false)
             palt(0, true)
             spr(82 + cat.want, x + 4, y + 1, 1, 1, cat.dir)
+        end
+
+        -- if the cat has a plan, draw a line
+        if cat.plan and cat.plan.x then
+            line(cat.x, cat.y, cat.plan.x, cat.plan.y, rnd(15))
         end
     end)
     pal()
