@@ -243,21 +243,22 @@ end
 -- cats
 --
 
-function update_cats()
+function update_cats() 
     for i = 1,#cats do
-        local x = cats[i].x
-        local y = cats[i].y
-        if cats[i].dir then
-            x -= cats[i].spd
+        local cat = cats[i]
+        local x = cat.x
+        local y = cat.y
+        if cat.dir then
+            x -= cat.spd
         else
-            x += cats[i].spd
+            x += cat.spd
         end
 
         if not wall_area(x, y, 4, 4) and max(abs(x - player.x), abs(y - player.y)) > 8 then
-            cats[i].x = x
-            cats[i].y = y
+            cat.x = x
+            cat.y = y
         else
-            cats[i].dir = not cats[i].dir
+            cat.dir = not cat.dir
         end
     end
 end
@@ -351,7 +352,7 @@ end
 
 config.pause.draw = function ()
     draw_background()
-    camera(player.x-64, player.y - 64)
+    camera(player.x - 64, player.y - 64)
     draw_world()
     draw_cats()
     camera()
