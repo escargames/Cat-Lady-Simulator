@@ -100,6 +100,7 @@ function ctimer(t)
         t.sec = 0
         t.min = 0
         state = "pause"
+        begin_pause()
     end
 end
 
@@ -133,11 +134,11 @@ function update_menu()
         player.y = 54
     end
 
-    if btn(4) and player.y == 54 then
+    if btnp(4) and player.y == 54 then
         state = "play"
         level = 1
         begin_play()
-    elseif btn(4) and player.y == 74 then
+    elseif btnp(4) and player.y == 74 then
         state="play"
         level = 2
         begin_play()
@@ -150,7 +151,7 @@ end
 --
 
 function make_level(level)
-    local sdisplay, stimer, splayer, scats, sspd, sbowls, sfridges
+    local sdisplay, stimer, splayer, scats, sspd, sbowls, sfridges, fscoremin
     if level == 0 then
         sdisplay = {cx = 0, cy = 48, width = 16, height = 16}
         splayer = {x = 28, y = 54, dir = 1, spd = 2}
@@ -161,7 +162,7 @@ function make_level(level)
 
     if level == 1 then
         sdisplay = {cx = 0, cy = 0, width = 16, height = 16}
-        stimer = {min = 1, sec = 15}
+        stimer = {min = 0, sec = 5}
         splayer = {x = 64, y = 64, dir = 1, spd = 2}
         scats = { {x = 26, y = 60},
                   {x = 92, y = 40},
@@ -175,6 +176,7 @@ function make_level(level)
                    { cx = 13.5, cy = 12.5, color = 2 },
                    { cx = 6.5, cy = 12.5, color = 3 } }
         sfridges = { 0, 1 }
+        fscoremin = 100
     end
 
     if level == 2 then
@@ -187,9 +189,10 @@ function make_level(level)
         sbowls = { {cx = 23.5, cy = 5.5, color = 0},
                    {cx = 26, cy = 9, color = 1} }
         sfridges = { 0, 1 }
+        fscoremin = 100
     end
 
-    return {display = sdisplay, timer = stimer, player = splayer, cats = scats, spd = sspd, bowls = sbowls, fridges = sfridges}
+    return {display = sdisplay, timer = stimer, player = splayer, cats = scats, spd = sspd, bowls = sbowls, fridges = sfridges, scoremin = fscoremin}
 end
 
 function begin_play()
@@ -205,7 +208,7 @@ function begin_play()
     for i = 1, #desc.bowls do
         add(bowls, {cx = desc.bowls[i].cx, cy = desc.bowls[i].cy, color = desc.bowls[i].color})
     end
-
+    score = 90
     -- find all fridges in the map and fill the fridges table
     fridges = {}
     for i=desc.display.cx,desc.display.cx+desc.display.width do
@@ -216,7 +219,7 @@ function begin_play()
             end
         end
     end
-
+    scoremin = desc.scoremin
     compute_paths()
 end
 
@@ -282,8 +285,26 @@ function pause_menu()
     menuitem(2, "menu", function() state = "menu" begin_menu() end)
 end
 
-function update_pause()
+function begin_pause()
+    des = make_level(0)
+    player = {x = des.player.x, y = des.player.y, dir = des.player.dir, spd = des.player.spd, bob = 0, walk = 0}
 end
+
+function update_pause()
+    if score >= scoremin then
+        if btnp(4) then
+            level += 1
+            state = "play"
+            begin_play()
+        end
+    elseif btnp(4) then
+        level = 0
+        state = "menu"
+        begin_menu()
+    end 
+    player.bob += 0.08
+end
+
 --
 -- collisions
 --
@@ -416,7 +437,7 @@ function draw_background()
 end
 
 function draw_menu()
-    csprint("ldjam42", 25, 10, 8)
+    csprint("ldjam42", 25, 12, 14)
     cprint("play", 50, 7)
     cprint("choose level", 70, 7)
 end
@@ -463,7 +484,12 @@ function draw_grandma()
 end
 
 function draw_pause()
-    cprint("time out", 25, 7)
+    csprint("time out", 25, 9, 14)
+    if score >= scoremin then
+        cprint("next level", 50, 7)
+    else
+        cprint("menu", 50, 7)
+    end
 end
 
 function draw_cats()
@@ -509,7 +535,8 @@ function draw_cats()
 end
 
 function draw_ui()
-    cosprint(tostr(timer.min)..":"..ctostr(flr(timer.sec), 2), 96, 4, 9, colortimer)
+    cosprint(tostr(timer.min)..":"..ctostr(flr(timer.sec), 2), 96, 116, 9, colortimer)
+    cosprint(tostr(score), 9, 116, 9, 14)
 end
 
 function display_camera()
@@ -549,7 +576,7 @@ config.pause.draw = function ()
     camera()
     draw_ui()
     draw_pause()
-    
+    draw_grandma() 
 end
 
 __gfx__
