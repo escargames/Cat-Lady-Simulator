@@ -350,8 +350,10 @@ function update_player()
     local y = player.y
     if btn(2) then
         y -= player.spd
+        player.dir = 2
     elseif btn(3) then
         y += player.spd
+        player.dir = 1
     end
 
     if not wall_area(player.x, y, 3, 3) and not has_cat_nearby(player.x, y) then
@@ -435,7 +437,7 @@ function draw_background()
 end
 
 function draw_menu()
-    csprint("ldjam42", 25, 10, 12)
+    csprint("ldjam42", 25, 10, 8)
     cprint("play", 50, 7)
     cprint("choose level", 70, 7)
 end
@@ -465,7 +467,16 @@ function draw_grandma()
         spr(100, player.x - 8, player.y - 9 - 2 * abs(cw), 1, 1, false, true)
         spr(100, player.x + 0, player.y - 11 + 2 * abs(cw), 1, 1, false, true)
     end
-    spr(96, player.x - 8, player.y - 12 + sin(player.bob), 2, 2, dir_x(player.dir))
+    if player.dir <= 1 then
+        spr(96, player.x - 8, player.y - 12 + sin(player.bob), 2, 2, dir_x(player.dir))
+    elseif player.dir == 2 then
+        pal(14,6)
+        pal(15,7)
+        pal(5,7)
+        pal(0,7)
+        spr(96, player.x - 8, player.y - 12 + sin(player.bob), 2, 2, dir_x(player.dir))
+        pal()
+    end
     palt()
     if player.carry then
         spr(82 + player.carry, player.x - 4, player.y - 15 + sw, 1, 1, dir_x(player.dir))
