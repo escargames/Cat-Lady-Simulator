@@ -86,12 +86,18 @@ end
 -- cool timer
 
 function ctimer()
-    sec -= 1/30
+    if sec > 0 then
+        sec -= 1/30
+    end
+
     if (sec <= 1) then 
         min -= 1
         sec += 60
     end
+
     if min < 0  then
+        sec = 0
+        min = 0
         state = "pause"
     end
 end
@@ -99,14 +105,11 @@ end
 -- cool tostring
 
 function ctostr(n, l)
-    local z = 10
-    if #tostr(n) < l then
-        for i = 1,l-#tostr(n) do
-            local z *= 10
-        end
-        return sub(tostr(z), 2, #tostr(z))..tostr(n)
-    else return tostr(n)
+    local a = tostr(n)
+    while #a<l do
+        a = "0"..a
     end
+    return a
 end
 
 --
@@ -318,10 +321,6 @@ function draw_cats()
 end
 
 function draw_ui()
-    palt(11, true)
-    palt(0, false)
-    spr(20, 2, 110, 2, 2)
-    palt()
     cosprint(tostr(min)..":"..ctostr(flr(sec), 2), 96, 4, 9, colortimer)
 end
 
@@ -350,6 +349,7 @@ config.pause.draw = function ()
     draw_world()
     draw_cats()
     camera()
+    draw_ui()
     draw_pause()
     
 end
