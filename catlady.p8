@@ -246,16 +246,16 @@ function compute_resources()
             local tile = mget(i,j)
             if tile == 50 then -- this is a fridge
                 if contains(desc.resources.meat, nfridges) then
-                    add(resources, {x = i * 8 + 5, y = j * 8 - 7, color = 0})
+                    add(resources, {x = i * 8 + 9, y = j * 8 - 3, xcol = i * 8 + 8, ycol = j * 8, color = 0})
                 elseif contains(desc.resources.fish, nfridges) then
-                    add(resources, {x = i * 8 + 5, y = j * 8 - 7, color = 1})
+                    add(resources, {x = i * 8 + 9, y = j * 8 - 3, xcol = i * 8 + 8, ycol = j * 8, color = 1})
                 end
                 nfridges += 1
             elseif tile == 26 then -- this is a sink
-                add(resources, {x = i * 8 + 5, y = j * 8 - 3, color = 2})
+                add(resources, {x = i * 8 + 9, y = j * 8 + 1, xcol = i * 8 + 8, ycol = j * 8 + 8, color = 2})
             elseif (tile == 36 or tile == 39) then -- this is a cupboard
                 if contains(desc.resources.cookie, ncupboards) then
-                    add(resources, {x = i * 8 + 4, y = j * 8 - 10, color = 3})
+                    add(resources, {x = i * 8 + 8, y = j * 8 - 6, xcol = i * 8 + 8, ycol = j * 8, color = 3})
                 end
                 ncupboards += 1
             end
@@ -386,6 +386,48 @@ function update_player()
 
     if (walk) player.walk += 0.25
     player.bob += 0.08
+
+    -- did the user throw something away?
+    if btnp(5) and player.carry then
+        player.throw = {color=player.carry, x=player.x, y=player.y-11, dir=dir_x(player.dir)}
+        player.carry = nil
+    end
+
+    -- disable charging (will be reactivated in the next step)
+    if player.charge then
+        player.charge.active = false
+    end
+
+    -- if charging, update the progress
+    if btn(4) and not player.carry then
+        for i=1,#resources do
+            local dx = player.x - resources[i].xcol
+            local dy = player.y - resources[i].ycol
+            if dx * dx + dy * dy / 9 < 6 * 6 then
+                if not player.charge or player.charge.id != i then
+                    player.charge = {id=i, active=true, progress=0}
+                else
+                    player.charge.active = true
+                    player.charge.progress += 0.015
+                    if player.charge.progress > 1 then
+                        player.carry = resources[i].color
+                        player.charge = nil
+                    end
+                end
+                break
+            end
+        end
+    end
+
+    -- if we threw something, update its coordinates
+    if player.throw then
+        local dx = player.throw.dir and -5 or 5
+        player.throw.x += dx
+        player.throw.y += 1
+        if player.throw.x < -10 or player.throw.x > 128 * 8 + 10 then
+            player.throw = false
+        end
+    end
 end
 
 --
@@ -473,7 +515,7 @@ function draw_world()
         spr(66 + b.color, b.cx * 8, b.cy * 8)
     end)
     foreach(resources, function(r)
-        spr(82 + r.color, r.x, r.y)
+        spr(82 + r.color, r.x - 4, r.y - 4)
     end)
 end
 
@@ -501,21 +543,26 @@ function draw_grandma()
         pal()
     end
     palt()
+    -- display the carry
     if player.carry then
         spr(82 + player.carry, player.x - 4, player.y - 15 + sw, 1, 1, dir_x(player.dir))
     end
+    -- display the throw
+    if player.throw then
+        spr(82 + player.throw.color, player.throw.x - 4, player.throw.y - 4, 1, 1, dir_x(player.dir))
+    end
     -- display the charge widget
-    if player.charge then
+    if player.charge and player.charge.active then
+        local t, col = player.charge.progress, 6 + rnd(2)
         local dx, dy = player.x - 8, player.y - 24
-        for i=1,7 do if (i>player.charge*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,7) end
+        for i=1,7 do if (i>t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
         spr(70, dx + 8, dy, 1, 1)
-        for i=1,7 do if (i<14-player.charge*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,7) end
+        for i=1,7 do if (i<14-t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
         spr(70, dx + 8, dy + 8, 1, 1, false, true)
-        for i=1,7 do if (i>player.charge*28-14) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,7) end
+        for i=1,7 do if (i>t*28-14) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
         spr(70, dx, dy + 8, 1, 1, true, true)
-        for i=1,7 do if (i<28-player.charge*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,7) end
+        for i=1,7 do if (i<28-t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
         spr(70, dx, dy, 1, 1, true)
-        print("...", dx + 3, dy + 3, 0)
     end
     pal()
 end
