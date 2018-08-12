@@ -133,6 +133,7 @@ function update_menu()
 
     if btn(4) and player.y == 54 then
         state = "play"
+        level = 1
         begin_play()
     end
     player.bob += 0.08
@@ -142,19 +143,40 @@ end
 -- play state handling
 --
 
+function make_level(level)
+    local splayer, scats, sbowls
+    if level == 1 then
+        stimer = {min = 1, sec = 15}
+        splayer = {x = 64, y = 64, dir = false, spd = 2}
+        scats = { {x = 26, y = 60, color = 1, dir = false, want = 0},
+             {x = 92, y = 40, color = 2, dir = false, want = 1},
+             {x = 86, y = 86, color = 3, dir = false},
+             {x = 40, y = 80, color = 2, dir = false},
+             {x = 36, y = 98, color = 1, dir = false},
+             {x = 100, y = 106, color = 1, dir = false, want = 2} }
+        sspd = 1
+        sbowls = { { cx = 1.5, cy = 2.5, color = 0 },
+                   { cx = 3.5, cy = 9.5, color = 1 } }
+    end
+    return {timer = stimer, player = splayer, cats = scats, spd = sspd, bowls = sbowls}
+end
+
 function begin_play()
-    level = {timer = {min = 1, sec = 15}}
-    player = {x = 64, y = 64, dir = false, spd = 2, bob = 0, walk = 0}
-    cats = { {x = 26, y = 60, color = 1, dir = false, spd = 1.5, want = 0},
-             {x = 92, y = 40, color = 2, dir = false, spd = 1.5, want = 1},
-             {x = 86, y = 86, color = 3, dir = false, spd = 1.5},
-             {x = 40, y = 80, color = 2, dir = false, spd = 1.5},
-             {x = 36, y = 98, color = 1, dir = false, spd = 1.5},
-             {x = 100, y = 106, color = 1, dir = false, spd = 1.5, want = 2}}
-    bowls = { { cx = 1.5, cy = 2.5, color = 0 },
-              { cx = 3.5, cy = 9.5, color = 1 }}
-    min=0
-    sec=15
+    local desc = make_level(level)
+    timer = {min = desc.timer.min, sec = desc.timer.sec}
+    player = {x = desc.player.x, y = desc.player.y, dir = desc.player.dir, spd = desc.player.spd, bob = 0, walk = 0}
+    
+    cats = {}
+    for i = 1, #desc.cats do
+        add(cats, {x = desc.cats[i].x, y = desc.cats[i].y, color = desc.cats[i].color, dir = desc.cats[i].dir, want = desc.cats[i].want})
+    end
+
+    spd = desc.spd
+
+    bowls = {}
+    for i = 1, #desc.bowls do
+        add(bowls, {cx = desc.bowls[i].cx, cy = desc.bowls[i].cy, color = desc.bowls[i].color})
+    end
 end
 
 function update_play()
@@ -163,12 +185,12 @@ function update_play()
 end
 
 function update_time()
-    if level.timer.min < 1 and level.timer.sec < 11 then
+    if timer.min < 1 and timer.sec < 11 then
         colortimer = 8
     else
         colortimer = 7
     end
-    ctimer(level.timer)
+    ctimer(timer)
 end
 
 --
@@ -249,9 +271,9 @@ function update_cats()
         local x = cat.x
         local y = cat.y
         if cat.dir then
-            x -= cat.spd
+            x -= spd
         else
-            x += cat.spd
+            x += spd
         end
 
         if not wall_area(x, y, 3, 3) and max(abs(x - player.x), abs(y - player.y)) > 8 then
@@ -330,7 +352,7 @@ function draw_cats()
 end
 
 function draw_ui()
-    cosprint(tostr(level.timer.min)..":"..ctostr(flr(level.timer.sec), 2), 96, 4, 9, colortimer)
+    cosprint(tostr(timer.min)..":"..ctostr(flr(timer.sec), 2), 96, 4, 9, colortimer)
 end
 
 config.menu.draw = function ()
