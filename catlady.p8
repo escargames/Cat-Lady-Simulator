@@ -121,7 +121,7 @@ end
 function begin_menu()
     level = 0
     desc = make_level(level)
-    player = {x = desc.player.x, y = desc.player.y, dir = desc.player.dir, spd = desc.player.spd, bob = 0, walk = 0}
+    player = {x = desc.player.x, y = desc.player.y, dir = desc.player.dir, spd = desc.player.spd, bob = 0, walk = 0.2}
     display = {cx = desc.display.cx, cy = desc.display.cy, height = desc.display.height, width = desc.display.width}
     cats = {}
 end
@@ -198,14 +198,14 @@ function make_level(level)
 end
 
 function contains(table, value)
-    for _,v in pairs(table) do if v == value then return true end end return false
+    if table then for _,v in pairs(table) do if v == value then return true end end end return false
 end
 
 function begin_play()
     desc = make_level(level)
     display = {cx = desc.display.cx, cy = desc.display.cy, width = desc.display.width, height = desc.display.height}
     timer = {min = desc.timer.min, sec = desc.timer.sec}
-    player = {x = desc.player.x, y = desc.player.y, dir = desc.player.dir, spd = desc.player.spd, bob = 0, walk = 0, charge = 0}
+    player = {x = desc.player.x, y = desc.player.y, dir = desc.player.dir, spd = desc.player.spd, bob = 0, walk = 0.2}
     
     cats = {}
     spd = desc.spd
@@ -310,7 +310,7 @@ end
 
 function begin_pause()
     des = make_level(0)
-    player = {x = des.player.x, y = des.player.y, dir = des.player.dir, spd = des.player.spd, bob = 0, walk = 0}
+    player = {x = des.player.x, y = des.player.y, dir = des.player.dir, spd = des.player.spd, bob = 0, walk = 0.2}
 end
 
 function update_pause()
@@ -386,7 +386,6 @@ function update_player()
 
     if (walk) player.walk += 0.25
     player.bob += 0.08
-    if (player.charge) player.charge += 0.02
 end
 
 --
