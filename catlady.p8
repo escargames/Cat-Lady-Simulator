@@ -150,12 +150,13 @@ end
 --
 
 function make_level(level)
-    local sdisplay, stimer, splayer, scats, sspd, sbowls
+    local sdisplay, stimer, splayer, scats, sspd, sbowls, sfridges
     if level == 0 then
         sdisplay = {cx = 0, cy = 48, width = 16, height = 16}
         splayer = {x = 28, y = 54, dir = false, spd = 2}
         scats = {}
         sbowls = {}
+        sfridges = {}
     end
 
     if level == 1 then
@@ -173,6 +174,7 @@ function make_level(level)
                    { cx = 3.5, cy = 9.5, color = 1 },
                    { cx = 13.5, cy = 12.5, color = 2 },
                    { cx = 6.5, cy = 12.5, color = 3 } }
+        sfridges = { 0, 1 }
     end
 
     if level == 2 then
@@ -184,9 +186,10 @@ function make_level(level)
         sspd = 1
         sbowls = { {cx = 23.5, cy = 5.5, color = 0},
                    {cx = 26, cy = 9, color = 1} }
+        sfridges = { 0, 1 }
     end
 
-    return {display = sdisplay, timer = stimer, player = splayer, cats = scats, spd = sspd, bowls = sbowls}
+    return {display = sdisplay, timer = stimer, player = splayer, cats = scats, spd = sspd, bowls = sbowls, fridges = sfridges}
 end
 
 function begin_play()
@@ -201,6 +204,17 @@ function begin_play()
     bowls = {}
     for i = 1, #desc.bowls do
         add(bowls, {cx = desc.bowls[i].cx, cy = desc.bowls[i].cy, color = desc.bowls[i].color})
+    end
+
+    -- find all fridges in the map and fill the fridges table
+    fridges = {}
+    for i=desc.display.cx,desc.display.cx+desc.display.width do
+        for j=desc.display.cy,desc.display.cy+desc.display.height do
+            local tile = mget(i,j)
+            if tile == 50 and #fridges < #desc.fridges then
+                add(fridges, {x = i * 8 + 5, y = j * 8 - 7, color = desc.fridges[1 + #fridges]})
+            end
+        end
     end
 
     compute_paths()
@@ -405,6 +419,9 @@ function draw_world()
     foreach(bowls, function(b)
         spr(66 + b.color, b.cx * 8, b.cy * 8)
     end)
+    foreach(fridges, function(f)
+        spr(82 + f.color, f.x, f.y)
+    end)
 end
 
 function draw_grandma()
@@ -538,9 +555,9 @@ bbb006676600bbbb000000000000000000000000000000000000000000000000bbbbbbbbbbbbbbbb
 bb06777777760bbb080000800300003001000010040000400000000000000000bbbbbbbbbbbbbbbb000000000000000000000000000000000000000000000000
 b5677777777765bb8ee88ef83bb33ba31cc11c61499449a40000000000000000bbbbbbbbbbb0bb0b000000000000000000000000000000000000000000000000
 b0677777777760bb8effffe83baaaab31c6666c149aaaa940000000000000000bbbbbbbbbb09b090000000000000000000000000000000000000000000000000
-b0777777777770bb088888800333333001111110044444400000000000000000bbbbbbbbb0490490000000000000000000000000000000000000000000000000
-b0677777777760bb000000000000000000000000000000000000000000000000bbbbbbbbb0919190000000000000000000000000000000000000000000000000
-b5677777777765bb000000000000000000000000000000000000000000000000bbbb000000909090000000000000000000000000000000000000000000000000
+b0777777777770bb088888860333333601111116044444460000000000000000bbbbbbbbb0490490000000000000000000000000000000000000000000000000
+b0677777777760bb606060606060606060606060606060600000000000000000bbbbbbbbb0919190000000000000000000000000000000000000000000000000
+b5677777777765bb060606060606060606060606060606060000000000000000bbbb000000909090000000000000000000000000000000000000000000000000
 bb06777777760bbbf880000000000000000c0000004444000000000000000000bbb0444949999990000000000000000000000000000000000000000000000000
 bbb506777605bbbbf8888000a000bb00000c0000049797400000000000000000bb0949494999900b000000000000000000000000000000000000000000000000
 bbbbb05770bbbbbbf8888800ba0b33b000cc100047aaaa740000000000000000bb04949999990bbb000000000000000000000000000000000000000000000000
