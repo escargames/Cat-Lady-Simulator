@@ -86,19 +86,19 @@ end
 
 -- cool timer
 
-function ctimer()
-    if sec > 0 then
-        sec -= 1/30
+function ctimer(t)
+    if t.sec > 0 then
+        t.sec -= 1/30
     end
 
-    if (sec <= 1) then 
-        min -= 1
-        sec += 60
+    if (t.sec <= 1) then 
+        t.min -= 1
+        t.sec += 60
     end
 
-    if min < 0  then
-        sec = 0
-        min = 0
+    if t.min < 0  then
+        t.sec = 0
+        t.min = 0
         state = "pause"
     end
 end
@@ -143,7 +143,8 @@ end
 --
 
 function begin_play()
-    level = 1
+    level = { {timer = {min = 1, sec = 15}},
+              {timer = {min = 1, sec = 15}} }
     player = {x = 64, y = 64, dir = false, spd = 2, bob = 0, walk = 0}
     cats = { {x = 62, y = 20, color = 1, dir = false, spd = 1.5, want = 0},
              {x = 92, y = 40, color = 2, dir = false, spd = 1.5, want = 1},
@@ -153,8 +154,6 @@ function begin_play()
              {x = 96, y = 106, color = 1, dir = false, spd = 1.5, want = 2}}
     bowls = { { cx = 5, cy = 4, color = 0 },
               { cx = 2, cy = 10, color = 1 }}
-    min=0
-    sec=15
 end
 
 function update_play()
@@ -163,12 +162,12 @@ function update_play()
 end
 
 function update_time()
-    if min < 1 and sec < 11 then
+    if level.timer.min < 1 and level.timer.sec < 11 then
         colortimer = 8
     else
         colortimer = 7
     end
-    ctimer(min, sec)
+    ctimer(level.timer)
 end
 
 --
@@ -328,7 +327,7 @@ function draw_cats()
 end
 
 function draw_ui()
-    cosprint(tostr(min)..":"..ctostr(flr(sec), 2), 96, 4, 9, colortimer)
+    cosprint(tostr(level.timer.min)..":"..ctostr(flr(level.timer.sec), 2), 96, 4, 9, colortimer)
 end
 
 config.menu.draw = function ()
