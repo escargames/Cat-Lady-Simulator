@@ -3,20 +3,21 @@ version 16
 __lua__
 --by niarkou & sam
 
---
--- standard pico-8 workflow
---
-
 config = {
     menu = {tl = "menu"},
     play = {tl = "play"},
     pause = {tl = "pause"},
 }
 
+--
+-- standard pico-8 workflow
+--
+
 function _init()
     cartdata("ldjam42")
     state = "menu"
     begin_menu()
+    pause_menu()
 end
 
 function _update()
@@ -102,7 +103,7 @@ function ctimer()
     end
 end
 
--- cool tostring
+-- cool tostring (adding "0")
 
 function ctostr(n, l)
     local a = tostr(n)
@@ -174,6 +175,10 @@ end
 -- pause state handling
 --
 
+function pause_menu()
+    menuitem(2, "menu", function() state = "menu" begin_menu() end)
+end
+
 function update_pause()
 end
 --
@@ -238,21 +243,22 @@ end
 -- cats
 --
 
-function update_cats()
+function update_cats() 
     for i = 1,#cats do
-        local x = cats[i].x
-        local y = cats[i].y
-        if cats[i].dir then
-            x -= cats[i].spd
+        local cat = cats[i]
+        local x = cat.x
+        local y = cat.y
+        if cat.dir then
+            x -= cat.spd
         else
-            x += cats[i].spd
+            x += cat.spd
         end
 
         if not wall_area(x, y, 3, 3) and max(abs(x - player.x), abs(y - player.y)) > 8 then
-            cats[i].x = x
-            cats[i].y = y
+            cat.x = x
+            cat.y = y
         else
-            cats[i].dir = not cats[i].dir
+            cat.dir = not cat.dir
         end
     end
 end
@@ -348,7 +354,7 @@ end
 
 config.pause.draw = function ()
     draw_background()
-    camera(player.x-64, player.y - 64)
+    camera(player.x - 64, player.y - 64)
     draw_world()
     draw_cats()
     camera()
