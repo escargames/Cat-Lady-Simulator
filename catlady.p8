@@ -154,7 +154,7 @@ function make_level(level)
     if level == 0 then
         sdisplay = {cx = 0, cy = 48, width = 16, height = 16}
         splayer = {x = 28, y = 54, dir = false, spd = 2}
-        scats = {}
+        scats = {{x = 64, y = 110}}
         sbowls = {}
         sfridges = {}
     end
@@ -487,6 +487,16 @@ function draw_ui()
     cosprint(tostr(timer.min)..":"..ctostr(flr(timer.sec), 2), 96, 4, 9, colortimer)
 end
 
+function display_camera()
+   if display.width > 16 then
+        camera(player.x - 64, (display.cy - (16 - display.height)/2)*8)
+    elseif display.height > 16 then
+        camera((display.cx - (16 - display.width)/2)*8, player.y -64)
+    else
+        camera((display.cx - (16 - display.width)/2)*8, (display.cy - (16 - display.height)/2)*8)
+    end
+end
+
 config.menu.draw = function ()
     camera(0, 48*8)
     draw_world()
@@ -498,7 +508,7 @@ end
 
 config.play.draw = function ()
     draw_background()
-    camera(player.x - 64, player.y - 64)
+    display_camera()
     draw_world()
     draw_cats()
     draw_grandma()
@@ -508,7 +518,7 @@ end
 
 config.pause.draw = function ()
     draw_background()
-    camera(player.x - 64, player.y - 64)
+    display_camera()
     draw_world()
     draw_cats()
     camera()
