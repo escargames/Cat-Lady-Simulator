@@ -171,10 +171,10 @@ function make_level(level)
                   {x = 36, y = 98},
                   {x = 100, y = 106} }
         sspd = 1
-        sbowls = { { cx = 1.5, cy = 2.5, color = 0 },
-                   { cx = 3.5, cy = 9.5, color = 1 },
-                   { cx = 13.5, cy = 12.5, color = 2 },
-                   { cx = 6.5, cy = 12.5, color = 3 } }
+        sbowls = { { cx = 1.5, cy = 2.5 },
+                   { cx = 3.5, cy = 9.5 },
+                   { cx = 13.5, cy = 12.5 },
+                   { cx = 6.5, cy = 12.5 } }
         fscoremin = 100
         -- fish in fridge #0, meat in fridge #1, cookie in cupboard #3
         sresources = { fish = {0}, meat = {1}, cookie = {3} }
@@ -187,8 +187,8 @@ function make_level(level)
         scats = { {x = 19*8, y = 4*8, color = 1, dir = 1, want = 0},
                   {x = 20*8, y = 9*8, color = 2, dir = 1, want = 1} }
         sspd = 1
-        sbowls = { {cx = 23.5, cy = 5.5, color = 0},
-                   {cx = 26, cy = 9, color = 1} }
+        sbowls = { {cx = 23.5, cy = 5.5},
+                   {cx = 26, cy = 9} }
 
         fscoremin = 100
         sresources = { fish = {0}, meat = {1} }
@@ -212,7 +212,7 @@ function begin_play()
 
     bowls = {}
     for i = 1, #desc.bowls do
-        add(bowls, {cx = desc.bowls[i].cx, cy = desc.bowls[i].cy, color = desc.bowls[i].color})
+        add(bowls, {cx = desc.bowls[i].cx, cy = desc.bowls[i].cy, color = 4})
     end
     score = 110
     scoremin = desc.scoremin
@@ -255,6 +255,8 @@ function compute_resources()
                 add(resources, {x = i * 8 + 9, y = j * 8 + 1, xcol = i * 8 + 8, ycol = j * 8 + 8, color = 2})
             elseif (tile == 36 or tile == 39) then -- this is a cupboard
                 if contains(desc.resources.cookie, ncupboards) then
+                    -- add two resources with different collisions because I can't make it work well :-(
+                    add(resources, {x = i * 8 + 8, y = j * 8 - 6, xcol = i * 8 + 8, ycol = j * 8 - 8, color = 3})
                     add(resources, {x = i * 8 + 8, y = j * 8 - 6, xcol = i * 8 + 8, ycol = j * 8, color = 3})
                 end
                 ncupboards += 1
@@ -576,13 +578,13 @@ function draw_grandma()
         local t, col = player.charge.progress, 6 + rnd(2)
         local dx, dy = player.x - 8, player.y - 24
         for i=1,7 do if (i>t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
-        spr(70, dx + 8, dy, 1, 1)
+        spr(71, dx + 8, dy, 1, 1)
         for i=1,7 do if (i<14-t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
-        spr(70, dx + 8, dy + 8, 1, 1, false, true)
+        spr(71, dx + 8, dy + 8, 1, 1, false, true)
         for i=1,7 do if (i>t*28-14) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
-        spr(70, dx, dy + 8, 1, 1, true, true)
+        spr(71, dx, dy + 8, 1, 1, true, true)
         for i=1,7 do if (i<28-t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
-        spr(70, dx, dy, 1, 1, true)
+        spr(71, dx, dy, 1, 1, true)
     end
     pal()
 end
@@ -718,12 +720,12 @@ __gfx__
 000000000000000065555550550500065111111111111110110100056666666f6666666f66666665000000000000000033333333333333333333333333333333
 bbbbb50005bbbbbb000000000000000000000000000000000000000000000000bbbbbbbbbbbbbbbb000000000000000000000000000000000000000000000000
 bbb006676600bbbb000000000000000000000000000000000000000000000000bbbbbbbbbbbbbbbb000000000000000000000000000000000000000000000000
-bb06777777760bbb080000800300003001000010040000401230000000000000bbbbbbbbbbbbbbbb000000000000000000000000000000000000000000000000
-b5677777777765bb8ee88ef83bb33ba31cc11c61499449a489a3400000000000bbbbbbbbbbb0bb0b000000000000000000000000000000000000000000000000
-b0677777777760bb8effffe83baaaab31c6666c149aaaa9489abb50000000000bbbbbbbbbb09b090000000000000000000000000000000000000000000000000
-b0777777777770bb088888860333333601111116044444468abbcc5000000000bbbbbbbbb0490490000000000000000000000000000000000000000000000000
-b0677777777760bb606060606060606060606060606060609accddd600000000bbbbbbbbb0919190000000000000000000000000000000000000000000000000
-b5677777777765bb06060606060606060606060606060606cddeeee700000000bbbb000000909090000000000000000000000000000000000000000000000000
+bb06777777760bbb088888800333333001111110044444400555555012300000bbbbbbbbbbbbbbbb000000000000000000000000000000000000000000000000
+b5677777777765bb8ee88ef83bb33ba31cc11c61499449a45dd55d6589a34000bbbbbbbbbbb0bb0b000000000000000000000000000000000000000000000000
+b0677777777760bb8effffe83baaaab31c6666c149aaaa945d6666d589abb500bbbbbbbbbb09b090000000000000000000000000000000000000000000000000
+b0777777777770bb08888886033333360111111604444446055555568abbcc50bbbbbbbbb0490490000000000000000000000000000000000000000000000000
+b0677777777760bb60606060606060606060606060606060606060609accddd6bbbbbbbbb0919190000000000000000000000000000000000000000000000000
+b5677777777765bb0606060606060606060606060606060606060606cddeeee7bbbb000000909090000000000000000000000000000000000000000000000000
 bb06777777760bbbf880000000000000000c0000004444000000000000000000bbb0444949999990000000000000000000000000000000000000000000000000
 bbb506777605bbbbf8888000a000bb00000c0000049797400000000000000000bb0949494999900b000000000000000000000000000000000000000000000000
 bbbbb05770bbbbbbf8888800ba0b33b000cc100047aaaa740000000000000000bb04949999990bbb000000000000000000000000000000000000000000000000
