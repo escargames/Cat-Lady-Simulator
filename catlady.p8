@@ -178,10 +178,10 @@ function make_level(level)
                   {x = 36, y = 98},
                   {x = 100, y = 106} }
         sspd = 1
-        sbowls = { { cx = 1.5, cy = 2.5, color = 0 },
-                   { cx = 3.5, cy = 9.5, color = 1 },
-                   { cx = 13.5, cy = 12.5, color = 2 },
-                   { cx = 6.5, cy = 12.5, color = 3 } }
+        sbowls = { { cx = 1.5, cy = 2.5 },
+                   { cx = 3.5, cy = 9.5 },
+                   { cx = 13.5, cy = 12.5 },
+                   { cx = 6.5, cy = 12.5 } }
         fscoremin = 100
         -- fish in fridge #0, meat in fridge #1, cookie in cupboard #3
         sresources = { fish = {0}, meat = {1}, cookie = {3} }
@@ -194,8 +194,8 @@ function make_level(level)
         scats = { {x = 19*8, y = 4*8, color = 1, dir = 1, want = 0},
                   {x = 20*8, y = 9*8, color = 2, dir = 1, want = 1} }
         sspd = 1
-        sbowls = { {cx = 23.5, cy = 5.5, color = 0},
-                   {cx = 26, cy = 9, color = 1} }
+        sbowls = { {cx = 23.5, cy = 5.5},
+                   {cx = 26, cy = 9} }
 
         fscoremin = 100
         sresources = { fish = {0}, meat = {1} }
@@ -219,7 +219,7 @@ function begin_play()
 
     bowls = {}
     for i = 1, #desc.bowls do
-        add(bowls, {cx = desc.bowls[i].cx, cy = desc.bowls[i].cy, color = desc.bowls[i].color})
+        add(bowls, {cx = desc.bowls[i].cx, cy = desc.bowls[i].cy, color = 4})
     end
     score = 110
     scoremin = desc.scoremin
@@ -253,16 +253,18 @@ function compute_resources()
             local tile = mget(i,j)
             if tile == 50 then -- this is a fridge
                 if contains(desc.resources.meat, nfridges) then
-                    add(resources, {x = i * 8 + 5, y = j * 8 - 7, color = 0})
+                    add(resources, {x = i * 8 + 9, y = j * 8 - 3, xcol = i * 8 + 8, ycol = j * 8, color = 0})
                 elseif contains(desc.resources.fish, nfridges) then
-                    add(resources, {x = i * 8 + 5, y = j * 8 - 7, color = 1})
+                    add(resources, {x = i * 8 + 9, y = j * 8 - 3, xcol = i * 8 + 8, ycol = j * 8, color = 1})
                 end
                 nfridges += 1
             elseif tile == 26 then -- this is a sink
-                add(resources, {x = i * 8 + 5, y = j * 8 - 3, color = 2})
+                add(resources, {x = i * 8 + 9, y = j * 8 + 1, xcol = i * 8 + 8, ycol = j * 8 + 8, color = 2})
             elseif (tile == 36 or tile == 39) then -- this is a cupboard
                 if contains(desc.resources.cookie, ncupboards) then
-                    add(resources, {x = i * 8 + 4, y = j * 8 - 10, color = 3})
+                    -- add two resources with different collisions because I can't make it work well :-(
+                    add(resources, {x = i * 8 + 8, y = j * 8 - 6, xcol = i * 8 + 8, ycol = j * 8 - 8, color = 3})
+                    add(resources, {x = i * 8 + 8, y = j * 8 - 6, xcol = i * 8 + 8, ycol = j * 8, color = 3})
                 end
                 ncupboards += 1
             end
@@ -372,23 +374,25 @@ function update_player()
     local walk = false
     local x = player.x
     if btn(0) then
+        player.dir = 0
         x -= player.spd
     elseif btn(1) then
+        player.dir = 1
         x += player.spd
     end
 
     if not wall_area(x, player.y, 3, 3) and not has_cat_nearby(x, player.y) then
-        if (player.x != x) walk = true player.dir = (player.x > x) and 0 or 1
+        if (player.x != x) walk = true
         player.x = x
     end
 
     local y = player.y
     if btn(2) then
-        y -= player.spd
         player.dir = 2
+        y -= player.spd
     elseif btn(3) then
+        player.dir = 3
         y += player.spd
-        player.dir = 1
     end
 
     if not wall_area(player.x, y, 3, 3) and not has_cat_nearby(player.x, y) then
@@ -398,6 +402,66 @@ function update_player()
 
     if (walk) player.walk += 0.25
     player.bob += 0.08
+
+    -- point of view (depends on the facing direction)
+    local povx, povy = player.x, player.y
+    if (player.dir == 0) then povx -= 6 elseif (player.dir == 1) then povx += 6 end
+    if (player.dir == 2) then povy -= 10 elseif (player.dir == 3) then povy += 2 end
+
+    -- did the user throw something away?
+    if btnp(5) and player.carry then
+        player.throw = {color=player.carry, x=player.x, y=player.y-11, dir=dir_x(player.dir)}
+        player.carry = nil
+    end
+
+    -- disable charging (will be reactivated in the next step)
+    if player.charge then
+        player.charge.active = false
+    end
+
+    -- if putting something in a bowl...
+    if btnp(4) and player.carry then
+        for i=1,#bowls do
+            local dx = povx - (bowls[i].cx * 8 + 4)
+            local dy = povy - (bowls[i].cy * 8 + 4)
+            if dx / 128 * dx + dy / 128 * dy < 8 * 8 / 128 then
+                bowls[i].color = player.carry
+                player.carry = nil
+                break
+            end
+        end
+    end
+
+    -- if charging or trying to charge, update the progress
+    if btn(4) and not player.carry then
+        for i=1,#resources do
+            local dx = povx - resources[i].xcol
+            local dy = povy - resources[i].ycol
+            if dx / 128 * dx + dy / 128 * dy < 6 * 6 / 128 then
+                if not player.charge or player.charge.id != i then
+                    player.charge = {id=i, active=true, progress=0}
+                else
+                    player.charge.active = true
+                    player.charge.progress += 0.015
+                    if player.charge.progress > 1 then
+                        player.carry = resources[i].color
+                        player.charge = nil
+                    end
+                end
+                break
+            end
+        end
+    end
+
+    -- if we threw something, update its coordinates
+    if player.throw then
+        local dx = player.throw.dir and -5 or 5
+        player.throw.x += dx
+        player.throw.y += 1
+        if player.throw.x < -10 or player.throw.x > 128 * 8 + 10 then
+            player.throw = nil
+        end
+    end
 end
 
 --
@@ -494,7 +558,7 @@ function draw_world()
         spr(66 + b.color, b.cx * 8, b.cy * 8)
     end)
     foreach(resources, function(r)
-        spr(82 + r.color, r.x, r.y)
+        spr(82 + r.color, r.x - 4, r.y - 4)
     end)
 end
 
@@ -511,7 +575,7 @@ function draw_grandma()
         spr(100, player.x - 8, player.y - 9 - 2 * abs(cw), 1, 1, false, true)
         spr(100, player.x + 0, player.y - 11 + 2 * abs(cw), 1, 1, false, true)
     end
-    if player.dir <= 1 then
+    if player.dir != 2 then
         spr(96, player.x - 8, player.y - 12 + sin(player.bob), 2, 2, dir_x(player.dir))
     elseif player.dir == 2 then
         pal(14,6)
@@ -522,21 +586,26 @@ function draw_grandma()
         pal()
     end
     palt()
+    -- display the carry
     if player.carry then
         spr(82 + player.carry, player.x - 4, player.y - 15 + sw, 1, 1, dir_x(player.dir))
     end
+    -- display the throw
+    if player.throw then
+        spr(82 + player.throw.color, player.throw.x - 4, player.throw.y - 4, 1, 1, dir_x(player.dir))
+    end
     -- display the charge widget
-    if player.charge then
+    if player.charge and player.charge.active then
+        local t, col = player.charge.progress, 6 + rnd(2)
         local dx, dy = player.x - 8, player.y - 24
-        for i=1,7 do if (i>player.charge*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,7) end
-        spr(70, dx + 8, dy, 1, 1)
-        for i=1,7 do if (i<14-player.charge*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,7) end
-        spr(70, dx + 8, dy + 8, 1, 1, false, true)
-        for i=1,7 do if (i>player.charge*28-14) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,7) end
-        spr(70, dx, dy + 8, 1, 1, true, true)
-        for i=1,7 do if (i<28-player.charge*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,7) end
-        spr(70, dx, dy, 1, 1, true)
-        print("...", dx + 3, dy + 3, 0)
+        for i=1,7 do if (i>t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
+        spr(71, dx + 8, dy, 1, 1)
+        for i=1,7 do if (i<14-t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
+        spr(71, dx + 8, dy + 8, 1, 1, false, true)
+        for i=1,7 do if (i>t*28-14) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
+        spr(71, dx, dy + 8, 1, 1, true, true)
+        for i=1,7 do if (i<28-t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
+        spr(71, dx, dy, 1, 1, true)
     end
     pal()
 end
@@ -676,12 +745,12 @@ __gfx__
 000000000000000065555550550500065111111111111110110100056666666f6666666f66666665000000000000000033333333333333333333333333333333
 bbbbb50005bbbbbb000000000000000000000000000000000000000000000000bbbbbbbbbbbbbbbb000000000000000000000000000000000000000000000000
 bbb006676600bbbb000000000000000000000000000000000000000000000000bbbbbbbbbbbbbbbb000000000000000000000000000000000000000000000000
-bb06777777760bbb080000800300003001000010040000401230000000000000bbbbbbbbbbbbbbbb000000000000000000000000000000000000000000000000
-b5677777777765bb8ee88ef83bb33ba31cc11c61499449a489a3400000000000bbbbbbbbbbb0bb0b000000000000000000000000000000000000000000000000
-b0677777777760bb8effffe83baaaab31c6666c149aaaa9489abb50000000000bbbbbbbbbb09b090000000000000000000000000000000000000000000000000
-b0777777777770bb088888860333333601111116044444468abbcc5000000000bbbbbbbbb0490490000000000000000000000000000000000000000000000000
-b0677777777760bb606060606060606060606060606060609accddd600000000bbbbbbbbb0919190000000000000000000000000000000000000000000000000
-b5677777777765bb06060606060606060606060606060606cddeeee700000000bbbb000000909090000000000000000000000000000000000000000000000000
+bb06777777760bbb088888800333333001111110044444400555555012300000bbbbbbbbbbbbbbbb000000000000000000000000000000000000000000000000
+b5677777777765bb8ee88ef83bb33ba31cc11c61499449a45dd55d6589a34000bbbbbbbbbbb0bb0b000000000000000000000000000000000000000000000000
+b0677777777760bb8effffe83baaaab31c6666c149aaaa945d6666d589abb500bbbbbbbbbb09b090000000000000000000000000000000000000000000000000
+b0777777777770bb08888886033333360111111604444446055555568abbcc50bbbbbbbbb0490490000000000000000000000000000000000000000000000000
+b0677777777760bb60606060606060606060606060606060606060609accddd6bbbbbbbbb0919190000000000000000000000000000000000000000000000000
+b5677777777765bb0606060606060606060606060606060606060606cddeeee7bbbb000000909090000000000000000000000000000000000000000000000000
 bb06777777760bbbf880000000000000000c0000004444000000000000000000bbb0444949999990000000000000000000000000000000000000000000000000
 bbb506777605bbbbf8888000a000bb00000c0000049797400000000000000000bb0949494999900b000000000000000000000000000000000000000000000000
 bbbbb05770bbbbbbf8888800ba0b33b000cc100047aaaa740000000000000000bb04949999990bbb000000000000000000000000000000000000000000000000
