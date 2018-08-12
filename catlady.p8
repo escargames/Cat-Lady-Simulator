@@ -360,23 +360,25 @@ function update_player()
     local walk = false
     local x = player.x
     if btn(0) then
+        player.dir = 0
         x -= player.spd
     elseif btn(1) then
+        player.dir = 1
         x += player.spd
     end
 
     if not wall_area(x, player.y, 3, 3) and not has_cat_nearby(x, player.y) then
-        if (player.x != x) walk = true player.dir = (player.x > x) and 0 or 1
+        if (player.x != x) walk = true
         player.x = x
     end
 
     local y = player.y
     if btn(2) then
-        y -= player.spd
         player.dir = 2
+        y -= player.spd
     elseif btn(3) then
+        player.dir = 3
         y += player.spd
-        player.dir = 1
     end
 
     if not wall_area(player.x, y, 3, 3) and not has_cat_nearby(player.x, y) then
@@ -386,6 +388,11 @@ function update_player()
 
     if (walk) player.walk += 0.25
     player.bob += 0.08
+
+    -- point of view (depends on the facing direction)
+    local povx, povy = player.x, player.y
+    if (player.dir == 0) then povx -= 6 elseif (player.dir == 1) then povx += 6 end
+    if (player.dir == 2) then povy -= 10 elseif (player.dir == 3) then povy += 2 end
 
     -- did the user throw something away?
     if btnp(5) and player.carry then
@@ -398,12 +405,25 @@ function update_player()
         player.charge.active = false
     end
 
-    -- if charging, update the progress
+    -- if putting something in a bowl...
+    if btnp(4) and player.carry then
+        for i=1,#bowls do
+            local dx = povx - bowls[i].cx * 8 + 4
+            local dy = povy - bowls[i].cy * 8 + 4
+            if dx / 128 * dx + dy / 128 * dy < 6 * 6 / 128 then
+                bowls[i].color = player.carry
+                player.carry = nil
+                break
+            end
+        end
+    end
+
+    -- if charging or trying to charge, update the progress
     if btn(4) and not player.carry then
         for i=1,#resources do
-            local dx = player.x - resources[i].xcol
-            local dy = player.y - resources[i].ycol
-            if dx * dx + dy * dy / 9 < 6 * 6 then
+            local dx = povx - resources[i].xcol
+            local dy = povy - resources[i].ycol
+            if dx / 128 * dx + dy / 128 * dy < 6 * 6 / 128 then
                 if not player.charge or player.charge.id != i then
                     player.charge = {id=i, active=true, progress=0}
                 else
@@ -425,7 +445,7 @@ function update_player()
         player.throw.x += dx
         player.throw.y += 1
         if player.throw.x < -10 or player.throw.x > 128 * 8 + 10 then
-            player.throw = false
+            player.throw = nil
         end
     end
 end
@@ -532,7 +552,7 @@ function draw_grandma()
         spr(100, player.x - 8, player.y - 9 - 2 * abs(cw), 1, 1, false, true)
         spr(100, player.x + 0, player.y - 11 + 2 * abs(cw), 1, 1, false, true)
     end
-    if player.dir <= 1 then
+    if player.dir != 2 then
         spr(96, player.x - 8, player.y - 12 + sin(player.bob), 2, 2, dir_x(player.dir))
     elseif player.dir == 2 then
         pal(14,6)
