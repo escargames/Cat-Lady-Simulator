@@ -701,12 +701,12 @@ end
 
 function draw_pause()
     csprint("time out", 25, 9, 14)
-    cprint("score", 60, 7)
-    cprint(tostr(score).." / "..tostr(desc.fscoremin), 70, 7)
+    cprint("score", 70, 7)
+    cprint(tostr(score).." / "..tostr(desc.fscoremin), 80, 7)
     if score >= desc.fscoremin then
         palt(11,true)
         palt(0,false)
-        spr(12, 48, 80, 4, 4)
+        spr(12, 48, 90, 4, 4)
         palt()
 
         if level == flevel then
