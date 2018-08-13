@@ -124,7 +124,6 @@ function begin_menu()
     desc = make_level(level)
     chooselevel = false
     player = {x = desc.start_x, y = desc.start_y, dir = 1, spd = desc.speed, bob = 0, walk = 0.2}
-    display = {cx = desc.cx, cy = desc.cy, height = desc.height, width = desc.width}
     cats = {}
 end
 
@@ -195,15 +194,11 @@ end
 
 function begin_play()
     desc = make_level(level)
-    display = {cx = desc.cx, cy = desc.cy, width = desc.width, height = desc.height}
     timer = {min = flr(desc.timer / 60), sec = desc.timer % 60}
     player = {x = desc.start_x, y = desc.start_y, dir = 1, spd = desc.speed, bob = 0, walk = 0.2}
-    
     cats = {}
-    spd = desc.cat_speed
 
     score = 110
-    scoremin = desc.fscoremin
     compute_resources()
     compute_paths()
 end
@@ -308,7 +303,7 @@ function begin_pause()
 end
 
 function update_pause()
-    if score >= scoremin then
+    if score >= desc.fscoremin then
         if btnp(4) then
             if level == flevel then
                 state = "menu"
@@ -470,10 +465,10 @@ function update_cats()
             local x = cat.x
             if cat.plan.dir == 0 then
                 cat.dir = 0
-                x -= spd
+                x -= desc.cat_speed
             elseif cat.plan.dir == 1 then
                 cat.dir = 1
-                x += spd
+                x += desc.cat_speed
             end
 
             if not wall_area(x, cat.y, 3, 3) and max(abs(x - player.x), abs(cat.y - player.y)) > 8 then
@@ -482,9 +477,9 @@ function update_cats()
 
             local y = cat.y
             if cat.plan.dir == 2 then
-                y -= spd
+                y -= desc.cat_speed
             elseif cat.plan.dir == 3 then
-                y += spd
+                y += desc.cat_speed
             end
 
             if not wall_area(cat.x, y, 3, 3) and max(abs(cat.x - player.x), abs(y - player.y)) > 8 then
@@ -537,7 +532,7 @@ end
 
 function draw_world()
     palt(0, false)
-    map(display.cx, display.cy, display.cx*8, display.cy*8, display.height, display.width)
+    map(desc.cx, desc.cy, desc.cx*8, desc.cy*8, desc.height, desc.width)
     palt(0, true)
     foreach(bowls, function(b)
         spr(66 + b.color, b.cx * 8, b.cy * 8)
@@ -597,7 +592,7 @@ end
 
 function draw_pause()
     csprint("time out", 25, 9, 14)
-    if score >= scoremin then
+    if score >= desc.fscoremin then
         if level == flevel then
             cprint("you win", 50, 7)
         else cprint("next level", 50, 7)
@@ -655,12 +650,12 @@ function draw_ui()
 end
 
 function display_camera()
-   if display.width > 16 then
-        camera(player.x - 64, (display.cy - (16 - display.height)/2)*8)
-    elseif display.height > 16 then
-        camera((display.cx - (16 - display.width)/2)*8, player.y -64)
+   if desc.width > 16 then
+        camera(player.x - 64, (desc.cy - (16 - desc.height)/2)*8)
+    elseif desc.height > 16 then
+        camera((desc.cx - (16 - desc.width)/2)*8, player.y -64)
     else
-        camera((display.cx - (16 - display.width)/2)*8, (display.cy - (16 - display.height)/2)*8)
+        camera((desc.cx - (16 - desc.width)/2)*8, (desc.cy - (16 - desc.height)/2)*8)
     end
 end
 
