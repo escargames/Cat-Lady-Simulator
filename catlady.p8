@@ -164,7 +164,7 @@ function update_menu()
         end
     end
 
-    if btn(4) and player.y == 84 then
+    if btn(4) and player.y == 74 then
         state="play"
         level = 2
         begin_play()
@@ -448,9 +448,11 @@ function update_player()
             local dy = povy - resources[i].ycol
             if dx / 128 * dx + dy / 128 * dy < 6 * 6 / 128 then
                 if not player.charge or player.charge.id != i then
-                    sfx(8)
                     player.charge = {id=i, active=true, progress=0}
                 else
+                    if player.charge.progress % 0.08 < 0.015 then
+                        sfx(8)
+                    end
                     player.charge.active = true
                     player.charge.progress += 0.015
                     if player.charge.progress > 1 then
@@ -547,7 +549,9 @@ function draw_background()
 end
 
 function draw_menu()
-    csprint("ldjam42", 25, 12, 14)
+    cosprint("cat", 16, 10, 20, 14)
+    cosprint("lady", 62, 10, 20, 14)
+    cosprint("simulator", 42, 30, 12, 12)
     cprint("play", 50, 7)
     cprint("choose level", 70, 7)
 end
