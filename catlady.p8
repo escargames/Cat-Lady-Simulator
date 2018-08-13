@@ -425,7 +425,7 @@ function update_pause()
         end
 
         for i = 1,3 do
-            if score > tscore[i] then
+            if score >= tscore[i] then
                 dset(level - 1, i)
             end
         end
