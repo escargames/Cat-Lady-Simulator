@@ -684,6 +684,9 @@ function update_cats()
 
             -- always decrease the timeout so that we can recompute the trajectory
             cat.plan.timeout -= 1/30
+            if not moved then
+                cat.plan.timeout -= 0.5
+            end
 
             -- did we reach the destination?
             local dx = cat.x - (targets[cat.plan.target].cx * 8 + 4)
