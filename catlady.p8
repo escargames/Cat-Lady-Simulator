@@ -135,17 +135,26 @@ function update_menu()
         sfx(5)
     elseif btnp(2) then
         player.y = 54
+        chooselevel = false
         sfx(5)
     end
 
     if btnp(4) and player.y == 54 then
         state = "play"
         level = 1
-        chooselevel = false
         begin_play()
         sfx(5)
-    elseif btnp(4) and player.y == 74 then
+    elseif player.y == 74 then
         chooselevel = true
+        selectlevel = 1
+        if selectlevel < flevel and btnp(1) then
+            selectlevel += 1
+            sfx(5)
+        end
+        if selectlevel > 1 and btnp(0) then
+            selectlevel -= 1
+            sfx(5)
+        end
         sfx(5)
     end
 
@@ -536,7 +545,7 @@ function draw_chooselevel()
         for i = 1, flevel do
             cosprint(tostr(i), 64 - (flevel - 1)*10 + (i - 1)*20, 80, 6, 7)
         end
-    rect(64 - (flevel - 1)*10 - 3, 80-3, 64 - (flevel - 1)*10 + 5, 80+7, 14)
+        rect(64 - (flevel - 1)*10, 80-3, 64 + (flevel - 1)*10, 80+7, 14)
     end
 end
 
