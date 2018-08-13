@@ -595,6 +595,14 @@ end
 function update_cats() 
     for i = 1,#cats do
         local cat = cats[i]
+        -- stay happy for a while
+        if cat.happy then
+            cat.happy -= 1/30
+            if cat.happy < 0 then
+                cat.happy = nil
+            end
+        end
+
         if cat.eating then
             -- if the cat is eating, it won't move
             if cat.eating % 0.04 < 0.008 then
@@ -668,13 +676,6 @@ function update_cats()
                 cat.plan = nil
             end
         else
-            -- stay happy for a while
-            if cat.happy then
-                cat.happy -= 1/30
-                if cat.happy < 0 then
-                    cat.happy = nil
-                end
-            end
             -- choose a "wanted" resource at random from the level
             if not cat.happy and not cat.want then
                 cat.want = wanted[1 + flr(rnd(#wanted))]
