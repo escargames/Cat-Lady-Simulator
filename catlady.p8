@@ -653,7 +653,7 @@ function update_cats()
             -- did we reach the destination?
             local dx = cat.x - (targets[cat.plan.target].cx * 8 + 4)
             local dy = cat.y - (targets[cat.plan.target].cy * 8 + 4)
-            if dx / 128 * dx + dy / 128 * dy < g_cat_bowl_dist / 128 * g_cat_bowl_dist / 128 and
+            if dx / 128 * dx + dy / 128 * dy < g_cat_bowl_dist / 128 * g_cat_bowl_dist and
                targets[cat.plan.target].color == cat.want and
                not targets[cat.plan.target].is_taken then
                 targets[cat.plan.target].is_taken = true
