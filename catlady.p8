@@ -120,6 +120,7 @@ end
 --
 
 function begin_menu()
+    music(0)
     level = 0
     desc = make_level(level)
     chooselevel = false
