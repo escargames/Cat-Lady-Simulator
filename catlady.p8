@@ -608,6 +608,20 @@ function draw_world()
     end)
 end
 
+function draw_charge(x, y, t)
+    x, y = x - 8, y - 8
+    local col = 6 + rnd(2)
+    for i=1,7 do if (i>t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
+    spr(71, x + 8, y, 1, 1)
+    for i=1,7 do if (i<14-t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
+    spr(71, x + 8, y + 8, 1, 1, false, true)
+    for i=1,7 do if (i>t*28-14) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
+    spr(71, x, y + 8, 1, 1, true, true)
+    for i=1,7 do if (i<28-t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
+    spr(71, x, y, 1, 1, true)
+    pal()
+end
+
 function draw_grandma()
     palt(11, true)
     palt(0, false)
@@ -642,16 +656,7 @@ function draw_grandma()
     end
     -- display the charge widget
     if player.charge and player.charge.active then
-        local t, col = player.charge.progress, 6 + rnd(2)
-        local dx, dy = player.x - 8, player.y - 24
-        for i=1,7 do if (i>t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
-        spr(71, dx + 8, dy, 1, 1)
-        for i=1,7 do if (i<14-t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
-        spr(71, dx + 8, dy + 8, 1, 1, false, true)
-        for i=1,7 do if (i>t*28-14) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
-        spr(71, dx, dy + 8, 1, 1, true, true)
-        for i=1,7 do if (i<28-t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
-        spr(71, dx, dy, 1, 1, true)
+        draw_charge(player.x, player.y - 16, player.charge.progress)
     end
     pal()
 end
