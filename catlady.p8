@@ -12,6 +12,8 @@ config = {
 --
 -- some constants
 --
+g_cat_spawn_time = 15 -- spawn a cat every 15 seconds
+
 g_player_cat_dist = 6
 g_player_res_dist = 6
 g_cat_bowl_dist = 6
@@ -276,6 +278,9 @@ function begin_play()
     player = {x = desc.start_x, y = desc.start_y, dir = 1, spd = desc.speed, bob = 0, walk = 0.2}
     cats = {}
 
+    cats_timer = 0
+    cats_wanted = 0
+
     score = 0
     compute_resources()
     compute_paths()
@@ -288,9 +293,17 @@ function update_play()
     if btnp(0, 1) then score += 50 end
     -- set timer to 5 seconds by pressing f
     if btnp(1, 1) then timer = {min=0,sec=5} end
+
     update_score()
     update_player()
     update_cats()
+
+    cats_timer -= 1/30
+    if cats_timer < 0 then
+        cats_wanted += 1
+        cats_timer += g_cat_spawn_time
+    end
+    if (#cats < cats_wanted) add_cat()
 end
 
 function update_time()
@@ -584,10 +597,10 @@ end
 function add_cat()
     -- spawn a cat at a random location found in desc.cats
     local startid = 1 + flr(rnd(#desc.cats))
-    local catdesc = desc.cats[startid]
-    if not has_cat_nearby(catdesc.x, catdesc.y) then
-        local cat = {x = catdesc.x, y = catdesc.y, color = flr(1 + rnd(3)), dir = rnd() > 0.5}
-        --cat.want = wanted[1 + flr(rnd(#wanted))]
+    local x, y = desc.cats[startid].x, desc.cats[startid].y
+    if not has_cat_nearby(x, y)
+       and max(abs(x - player.x), abs(y - player.y)) >= g_player_cat_dist then
+        local cat = {x = x, y = y, color = flr(1 + rnd(3)), dir = rnd() > 0.5}
         add(cats, cat)
     end
 end
