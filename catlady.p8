@@ -265,6 +265,11 @@ function contains(table, value)
     if table then for _,v in pairs(table) do if v == value then return true end end end return false
 end
 
+-- check that dx*dx + dy*dy < r*r
+function test_radius(dx, dy, r)
+    return dx / 256 * dx + dy / 256 * dx - r / 256 * r
+end
+
 function begin_play()
     desc = make_level(level)
     timer = {min = flr(desc.timer / 60), sec = desc.timer % 60}
@@ -523,7 +528,7 @@ function update_player()
             if targets[i].is_bowl and not targets[i].is_taken then
                 local dx = povx - (targets[i].cx * 8 + 4)
                 local dy = povy - (targets[i].cy * 8 + 4)
-                if dx / 128 * dx + dy / 128 * dy < 8 * 8 / 128 then
+                if test_radius(dx, dy, 8) < 0 then
                     sfx(7)
                     targets[i].color = player.carry
                     player.carry = nil
@@ -538,7 +543,7 @@ function update_player()
         for i=1,#resources do
             local dx = povx - resources[i].xcol
             local dy = povy - resources[i].ycol
-            if dx / 128 * dx + dy / 128 * dy < g_player_res_dist / 128 * g_player_res_dist then
+            if test_radius(dx, dy, g_player_res_dist) < 0 then
                 if not player.charge or player.charge.id != i then
                     player.charge = {id=i, active=true, progress=0}
                 else
@@ -653,7 +658,7 @@ function update_cats()
             -- did we reach the destination?
             local dx = cat.x - (targets[cat.plan.target].cx * 8 + 4)
             local dy = cat.y - (targets[cat.plan.target].cy * 8 + 4)
-            if dx / 128 * dx + dy / 128 * dy < g_cat_bowl_dist / 128 * g_cat_bowl_dist and
+            if test_radius(dx, dy, g_cat_bowl_dist) < 0 then
                targets[cat.plan.target].color == cat.want and
                not targets[cat.plan.target].is_taken then
                 targets[cat.plan.target].is_taken = true
