@@ -487,7 +487,7 @@ end
 --
 
 function update_player()
-    local walk = false
+    local moved = false
     local x = player.x
     if btn(0) then
         player.dir = 0
@@ -497,8 +497,8 @@ function update_player()
         x += player.spd
     end
 
-    if not wall_area(x, player.y, 3, 3) and not has_cat_nearby(x, player.y) then
-        if (player.x != x) walk = true
+    if player.x != x and not wall_area(x, player.y, 3, 3) and not has_cat_nearby(x, player.y) then
+        moved = true
         player.x = x
     end
 
@@ -511,12 +511,12 @@ function update_player()
         y += player.spd
     end
 
-    if not wall_area(player.x, y, 3, 3) and not has_cat_nearby(player.x, y) then
-        if (player.y != y) walk = true
+    if player.y != y and not wall_area(player.x, y, 3, 3) and not has_cat_nearby(player.x, y) then
+        moved = true
         player.y = y
     end
 
-    if (walk) then
+    if (moved) then
         player.walk += 0.25
         if player.walk % 1 < 0.25 then
             sfx(10)
@@ -659,7 +659,7 @@ function update_cats()
             end
 
             --if not wall_area(x, cat.y, 3, 3) and
-            if not wall_area(x, cat.y, 3, 3) and not has_cat_nearby(x, cat.y, cat) and
+            if x != cat.x and not wall_area(x, cat.y, 3, 3) and not has_cat_nearby(x, cat.y, cat) and
                max(abs(x - player.x), abs(cat.y - player.y)) >= g_player_cat_dist then
                 moved = true
                 cat.x = x
@@ -673,7 +673,7 @@ function update_cats()
             end
 
             --if not wall_area(cat.x, y, 3, 3) and
-            if not wall_area(cat.x, y, 3, 3) and not has_cat_nearby(cat.x, y, cat) and
+            if y != cat.y and not wall_area(cat.x, y, 3, 3) and not has_cat_nearby(cat.x, y, cat) and
                max(abs(cat.x - player.x), abs(y - player.y)) >= g_player_cat_dist then
                 moved = true
                 cat.y = y
