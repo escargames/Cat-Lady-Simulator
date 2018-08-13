@@ -704,6 +704,7 @@ function draw_menu()
     else
         cprint("help", 90, 7)
     end
+    cprint("an ld42 game by niarkou & sam", 119, 6)
 end
 
 function draw_chooselevel()
