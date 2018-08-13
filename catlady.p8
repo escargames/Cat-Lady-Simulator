@@ -217,9 +217,18 @@ function make_level(level)
     end
 
     if level == 1 then
+        return { cx = 16, cy = 0, width = 12, height = 12,
+                 start_x = 22*8, start_y = 5.2*8, speed = 2, cat_speed = 1,
+                 timer = 90, fscoremin = 100,
+                 cats = { {x = 19*8, y = 4*8, color = 1, dir = 1, want = 0},
+                          {x = 20*8, y = 9*8, color = 2, dir = 1, want = 1} },
+                 resources = { fish = {0}, meat = {1} } }
+    end
+
+    if level == 2 then
         return { cx = 0, cy = 0, width = 16, height = 16,
                  start_x = 64, start_y = 64, speed = 2, cat_speed = 1,
-                 timer = 5, fscoremin = 100,
+                 timer = 90, fscoremin = 100,
                  cats = { {x = 26, y = 60},
                           {x = 92, y = 40},
                           {x = 86, y = 86},
@@ -228,15 +237,6 @@ function make_level(level)
                           {x = 100, y = 106} },
                  -- fish in fridge #0, meat in fridge #1, cookie in cupboard #3
                  resources = { fish = {0}, meat = {1}, cookie = {3} } }
-    end
-
-    if level == 2 then
-        return { cx = 16, cy = 0, width = 12, height = 12,
-                 start_x = 22*8, start_y = 5.2*8, speed = 2, cat_speed = 1,
-                 timer = 9, fscoremin = 100,
-                 cats = { {x = 19*8, y = 4*8, color = 1, dir = 1, want = 0},
-                          {x = 20*8, y = 9*8, color = 2, dir = 1, want = 1} },
-                 resources = { fish = {0}, meat = {1} } }
     end
 end
 
@@ -258,6 +258,8 @@ end
 function update_play()
     -- add a cat by pressing tab
     if btnp(4, 1) then add_cat() end
+    -- set timer to 12 seconds by pressing f
+    if btnp(1, 1) then timer = {min=0,sec=12} end
 
     update_player()
     update_cats()
@@ -543,44 +545,56 @@ function update_cats()
     for i = 1,#cats do
         local cat = cats[i]
         if cat.plan then
+            local moved = false
+
             -- if the cat has a plan, make it move in that direction
+            local d = paths[cat.plan.target]
+            local cell = flr(cat.x / 8) + 128 * flr(cat.y / 8)
+            if cell and d[cell] and (d[cell] > 0) then
+                if ((d[cell + 1] or 1000) < d[cell]) cat.dir = 1
+                if ((d[cell - 1] or 1000) < d[cell]) cat.dir = 0
+                if ((d[cell + 128] or 1000) < d[cell]) cat.dir = 3
+                if ((d[cell - 128] or 1000) < d[cell]) cat.dir = 2
+            end
+
             local x = cat.x
-            if cat.plan.dir == 0 then
-                cat.dir = 0
+            if cat.dir == 0 or (cat.dir >= 2 and cat.x % 8 > 4) then
                 x -= desc.cat_speed
-            elseif cat.plan.dir == 1 then
-                cat.dir = 1
+            elseif cat.dir == 1 or (cat.dir >= 2 and cat.x % 8 < 4) then
                 x += desc.cat_speed
             end
 
             if not wall_area(x, cat.y, 3, 3) and max(abs(x - player.x), abs(cat.y - player.y)) > 8 then
+                moved = true
                 cat.x = x
             end
 
             local y = cat.y
-            if cat.plan.dir == 2 then
+            if cat.dir == 2 or (cat.dir <= 1 and cat.y % 8 > 4) then
                 y -= desc.cat_speed
-            elseif cat.plan.dir == 3 then
+            elseif cat.dir == 3 or (cat.dir <= 1 and cat.y % 8 < 4) then
                 y += desc.cat_speed
             end
 
             if not wall_area(cat.x, y, 3, 3) and max(abs(cat.x - player.x), abs(y - player.y)) > 8 then
+                moved = true
                 cat.y = y
             end
 
+            if not moved then
+                cat.plan.timeout -= 1/30
+            end
+
             -- at the end of the plan, remove the plan
-            cat.plan.length -= 1/30
-            if cat.plan.length < 0 then
+            if cat.plan.timeout < 0 then
                 cat.plan = nil
             end
         else
             -- if it does not have a plan, maybe compute one
-            if rnd() > 0.5 then
-                cat.plan = { dir = flr(rnd(5)), length = rnd(2) }
-                for i=1,#targets do
-                    if targets[i].is_bowl and targets[i].color == cat.want then
-                        cat.plan.bowl, cat.plan.x, cat.plan.y = i, targets[i].cx * 8 + 4, targets[i].cy * 8 + 4
-                    end
+            for i=1,#targets do
+                if targets[i].is_bowl and targets[i].color == cat.want then
+                    cat.plan = { target = i, timeout = rnd(2) }
+                    break
                 end
             end
         end
@@ -727,10 +741,10 @@ function draw_cats()
         end
 
         -- debug: if the cat has a plan, draw a line
-        if cat.plan and cat.plan.bowl then
-            --printh("cat has a plan for target "..tostr(cat.plan.bowl).." at ("..tostr(cat.plan.x)..","..tostr(cat.plan.y)..")")
+        if cat.plan and cat.plan.target then
+            --printh("cat has a plan for target "..tostr(cat.plan.target).." at ("..tostr(cat.plan.x)..","..tostr(cat.plan.y)..")")
             local col = 12 + rnd(4)
-            local d = paths[cat.plan.bowl]
+            local d = paths[cat.plan.target]
             local cell = flr(cat.x / 8) + 128 * flr(cat.y / 8)
             --printh("  current cell "..tostr(cell)..": dist "..tostr(d[cell]))
             while cell and d[cell] and (d[cell] > 0) do
@@ -739,10 +753,10 @@ function draw_cats()
                 if ((d[cell - 1] or 1000) < d[cell]) nextcell = cell - 1
                 if ((d[cell + 128] or 1000) < d[cell]) nextcell = cell + 128
                 if ((d[cell - 128] or 1000) < d[cell]) nextcell = cell - 128
-                if (nextcell) line(cell % 128 * 8 + 4, flr(cell / 128) * 8 + 4, nextcell % 128 * 8 + 4, flr(nextcell / 128) * 8 + 4, col)
+                --if (nextcell) line(cell % 128 * 8 + 4, flr(cell / 128) * 8 + 4, nextcell % 128 * 8 + 4, flr(nextcell / 128) * 8 + 4, col)
                 cell = nextcell
             end
-            line(cat.x, cat.y, cat.plan.x, cat.plan.y, 11 + targets[cat.plan.bowl].color)
+            --line(cat.x, cat.y, cat.plan.x, cat.plan.y, col)
         end
     end)
     pal()
