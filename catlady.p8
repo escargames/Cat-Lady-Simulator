@@ -217,6 +217,15 @@ function make_level(level)
     end
 
     if level == 1 then
+        return { cx = 16, cy = 0, width = 12, height = 12,
+                 start_x = 22*8, start_y = 5.2*8, speed = 2, cat_speed = 1,
+                 timer = 9, fscoremin = 100,
+                 cats = { {x = 19*8, y = 4*8, color = 1, dir = 1, want = 0},
+                          {x = 20*8, y = 9*8, color = 2, dir = 1, want = 1} },
+                 resources = { fish = {0}, meat = {1} } }
+    end
+
+    if level == 2 then
         return { cx = 0, cy = 0, width = 16, height = 16,
                  start_x = 64, start_y = 64, speed = 2, cat_speed = 1,
                  timer = 5, fscoremin = 100,
@@ -228,15 +237,6 @@ function make_level(level)
                           {x = 100, y = 106} },
                  -- fish in fridge #0, meat in fridge #1, cookie in cupboard #3
                  resources = { fish = {0}, meat = {1}, cookie = {3} } }
-    end
-
-    if level == 2 then
-        return { cx = 16, cy = 0, width = 12, height = 12,
-                 start_x = 22*8, start_y = 5.2*8, speed = 2, cat_speed = 1,
-                 timer = 9, fscoremin = 100,
-                 cats = { {x = 19*8, y = 4*8, color = 1, dir = 1, want = 0},
-                          {x = 20*8, y = 9*8, color = 2, dir = 1, want = 1} },
-                 resources = { fish = {0}, meat = {1} } }
     end
 end
 
