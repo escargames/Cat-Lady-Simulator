@@ -88,6 +88,14 @@ end
 -- cool timer
 
 function ctimer(t)
+    if t.min == 0 and (t.sec % 1 >= 29/30) then
+        if t.sec < 1 then
+            -- TODO SFX: timeout sound!
+        elseif t.sec < 11 then
+            -- TODO SFX: stressful clock sounds!
+        end
+    end
+
     if t.sec > 0 then
         t.sec -= 1/30
     end
