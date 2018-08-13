@@ -415,7 +415,12 @@ function update_player()
         player.y = y
     end
 
-    if (walk) player.walk += 0.25
+    if (walk) then
+        player.walk += 0.25
+        if player.walk % 1 < 0.25 then
+            -- TODO SFX: walking sounds
+        end
+    end
     player.bob += 0.08
 
     -- point of view (depends on the facing direction)
