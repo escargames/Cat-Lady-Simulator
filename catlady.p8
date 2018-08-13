@@ -687,10 +687,12 @@ end
 
 function draw_pause()
     csprint("time out", 25, 9, 14)
+    cprint("score", 70, 7)
+    cprint(tostr(score).." / "..tostr(desc.fscoremin), 60, 7)
     if score >= desc.fscoremin then
         palt(11,true)
         palt(0,false)
-        spr(12, 48, 60, 4, 4)
+        spr(12, 48, 80, 4, 4)
         palt()
 
         if level == flevel then
@@ -755,8 +757,9 @@ function draw_ui()
         cosprint("fish", 82, 4, 6, 7)
         cosprint("water", 12*8, 22, 6, 7)
         cosprint("cookie", 30, 62, 6, 7)
-        csprint("feed the cat by", 110, 6, 7)
-        csprint("pressing 🅾️ near a bowl", 118, 6, 7)
+        csprint("feed the cat", 102, 6, 14)
+        csprint("press 🅾️ near a bowl", 110, 6, 7)
+        csprint("press ❎ to throw away", 118, 6, 7)
     end
 end
 
