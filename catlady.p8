@@ -120,7 +120,7 @@ end
 
 function ctostr(n, l)
     local a = tostr(n)
-    while #a<l do
+    while #a < l do
         a = "0"..a
     end
     return a
@@ -688,12 +688,13 @@ end
 function draw_pause()
     csprint("time out", 25, 9, 14)
     if score >= desc.fscoremin then
+        palt(11,true)
+        palt(0,false)
+        spr(12, 48, 60, 4, 4)
+        palt()
+
         if level == flevel then
             cprint("you win", 50, 7)
-            --palt(11,true)
-            --palt(0,false)
-            --spr(12, 48, 60, 32, 32)
-            --pal()
         else cprint("next level", 50, 7)
         end
     else
@@ -754,7 +755,7 @@ function draw_ui()
         cosprint("fish", 82, 4, 6, 7)
         cosprint("water", 12*8, 22, 6, 7)
         cosprint("cookie", 30, 62, 6, 7)
-        csprint("feed the cats by", 110, 6, 7)
+        csprint("feed the cat by", 110, 6, 7)
         csprint("pressing 🅾️ near a bowl", 118, 6, 7)
     end
 end
