@@ -422,10 +422,13 @@ function begin_pause()
     local des = make_level(0)
     player = {x = des.start_x, y = des.start_y, dir = 1, spd = des.speed, bob = 0, walk = 0.2}
     level += 1
+    wait_for_idle = true
 end
 
 function update_pause()
-    if score >= desc.fscoremin then
+    if wait_for_idle then
+        wait_for_idle = btn() != 0
+    elseif score >= desc.fscoremin then
         if levelsaved < level and level <= flevel then
             levelsaved = level
             dset(0, levelsaved)
