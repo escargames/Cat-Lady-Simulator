@@ -268,7 +268,7 @@ function begin_play()
     player = {x = desc.start_x, y = desc.start_y, dir = 1, spd = desc.speed, bob = 0, walk = 0.2}
     cats = {}
 
-    score = 160
+    score = 0
     compute_resources()
     compute_paths()
 end
@@ -276,8 +276,10 @@ end
 function update_play()
     -- add a cat by pressing tab
     if btnp(4, 1) then add_cat() end
-    -- set timer to 12 seconds by pressing f
-    if btnp(1, 1) then timer = {min=0,sec=12} end
+    -- add 50 to score by pressing s
+    if btnp(0, 1) then score += 50 end
+    -- set timer to 5 seconds by pressing f
+    if btnp(1, 1) then timer = {min=0,sec=5} end
     update_score()
     update_player()
     update_cats()
