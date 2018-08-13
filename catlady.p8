@@ -441,9 +441,11 @@ function update_player()
             local dy = povy - resources[i].ycol
             if dx / 128 * dx + dy / 128 * dy < 6 * 6 / 128 then
                 if not player.charge or player.charge.id != i then
-                    sfx(8)
                     player.charge = {id=i, active=true, progress=0}
                 else
+                    if player.charge.progress % 0.08 < 0.015 then
+                        sfx(8)
+                    end
                     player.charge.active = true
                     player.charge.progress += 0.015
                     if player.charge.progress > 1 then
