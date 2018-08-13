@@ -219,7 +219,7 @@ function make_level(level)
     if level == 1 then
         return { cx = 16, cy = 0, width = 12, height = 12,
                  start_x = 22*8, start_y = 5.2*8, speed = 2, cat_speed = 1,
-                 timer = 9, fscoremin = 100,
+                 timer = 90, fscoremin = 100,
                  cats = { {x = 19*8, y = 4*8, color = 1, dir = 1, want = 0},
                           {x = 20*8, y = 9*8, color = 2, dir = 1, want = 1} },
                  resources = { fish = {0}, meat = {1} } }
@@ -228,7 +228,7 @@ function make_level(level)
     if level == 2 then
         return { cx = 0, cy = 0, width = 16, height = 16,
                  start_x = 64, start_y = 64, speed = 2, cat_speed = 1,
-                 timer = 5, fscoremin = 100,
+                 timer = 90, fscoremin = 100,
                  cats = { {x = 26, y = 60},
                           {x = 92, y = 40},
                           {x = 86, y = 86},
@@ -258,6 +258,8 @@ end
 function update_play()
     -- add a cat by pressing tab
     if btnp(4, 1) then add_cat() end
+    -- set timer to 12 seconds by pressing f
+    if btnp(1, 1) then timer = {min=0,sec=12} end
 
     update_player()
     update_cats()
