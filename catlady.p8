@@ -662,7 +662,11 @@ function draw_menu()
     cosprint("lady", 62, 10, 20, 14)
     cosprint("simulator", 42, 30, 12, 12)
     cprint("play", 50, 7)
-    cprint("choose level", 70, 7)
+    if levelsaved == 0 then
+        cprint("choose level", 70, 5)
+    else
+        cprint("choose level", 70, 7)
+    end
     if grandmapos == 2 and levelsaved != 0 then
         cprint("help", 95, 7)
     else
