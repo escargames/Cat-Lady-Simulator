@@ -282,6 +282,8 @@ end
 function find_path(cx, cy)
     local grid, tovisit, visited = {}, {}, {}
     local dist = 0
+    local xmin, xmax = desc.cx * 8, (desc.cx + desc.width - 1) * 8
+    local ymin, ymax = desc.cy * 8, (desc.cy + desc.height - 1) * 8
     add(tovisit, flr(cx) + 128 * flr(cy))
     add(tovisit, flr(cx) + 128 * ceil(cy))
     add(tovisit, ceil(cx) + 128 * flr(cy))
@@ -297,16 +299,17 @@ function find_path(cx, cy)
         for j = 1, #tovisit do
             local cell = tovisit[j]
             local x, y = cell % 128 * 8, flr(cell / 128) * 8
-            if y > desc.cy and not visited[cell - 128] and not wall(x, y - 8) then nxt[cell - 128] = true end
-            if y < desc.cy + desc.height - 1 and not visited[cell + 128] and not wall(x, y + 8) then nxt[cell + 128] = true end
-            if x > desc.cx and not visited[cell - 1] and not wall(x - 8, y) then nxt[cell - 1] = true end
-            if x < desc.cx + desc.width - 1 and not visited[cell + 1] and not wall(x + 8, y) then nxt[cell + 1] = true end
+            if (y > ymin) and not visited[cell - 128] and not wall(x, y - 8) then nxt[cell - 128] = true end
+            if (y < ymax) and not visited[cell + 128] and not wall(x, y + 8) then nxt[cell + 128] = true end
+            if (x > xmin) and not visited[cell - 1] and not wall(x - 8, y) then nxt[cell - 1] = true end
+            if (x < xmax) and not visited[cell + 1] and not wall(x + 8, y) then nxt[cell + 1] = true end
         end
         -- compute new list of cells to visit
         tovisit = {}
         for k, _ in pairs(nxt) do add(tovisit, k) end
         dist += 1
     end
+    --for k, v in pairs(grid) do printh('path['..tostr(k)..'] = '..tostr(v)) end
     return grid
 end
 
@@ -314,6 +317,7 @@ function compute_paths()
     -- find all bowls in the map and compute the shortest path to them
     paths = {}
     for i = 1, #targets do
+        --printh("find path for target "..tostr(i))
         paths[i] = find_path(targets[i].cx, targets[i].cy)
     end
 end
@@ -688,10 +692,12 @@ function draw_cats()
 
         -- debug: if the cat has a plan, draw a line
         if cat.plan and cat.plan.bowl then
+            --printh("cat has a plan for target "..tostr(cat.plan.bowl).." at ("..tostr(cat.plan.x)..","..tostr(cat.plan.y)..")")
             local col = 12 + rnd(4)
             local d = paths[cat.plan.bowl]
             local cell = flr(cat.x / 8) + 128 * flr(cat.y / 8)
-            while cell and d[cell] and d[cell] > 0 do
+            --printh("  current cell "..tostr(cell)..": dist "..tostr(d[cell]))
+            while cell and d[cell] and (d[cell] > 0) do
                 local nextcell = nil
                 if ((d[cell + 1] or 1000) < d[cell]) nextcell = cell + 1
                 if ((d[cell - 1] or 1000) < d[cell]) nextcell = cell - 1
