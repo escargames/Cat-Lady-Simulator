@@ -219,14 +219,12 @@ function make_level(level)
      if level == -1 then
         return { cx = 0, cy = 16, width = 16, height = 16,
                  start_x = 64, start_y = 24*8, speed = 2, cat_speed = 1, timer = 100000,
-                 cats = {{x = 64, y = 23*8}},
                  resources = { fish = {1}, meat = {0}, cookie = {3} } }
     end
     
     if level == 0 then
         return { cx = 0, cy = 48, width = 16, height = 16,
                  start_x = 28, start_y = 54, speed = 2,
-                 cats = {{x = 64, y = 110}},
                  resources = {} }
     end
 
@@ -234,8 +232,6 @@ function make_level(level)
         return { cx = 28, cy = 0, width = 10, height = 10,
                  start_x = 33*8, start_y = 9*8, speed = 2, cat_speed = 1,
                  timer = 90, fscoremin = 100,
-                 cats = { {x = 30*8, y = 4*8, color = 1, dir = 1, want = 0},
-                          {x = 34*8, y = 8*8, color = 2, dir = 1, want = 1} },
                  resources = { fish = {0} } }
     end
 
@@ -243,8 +239,6 @@ function make_level(level)
         return { cx = 16, cy = 0, width = 12, height = 12,
                  start_x = 22*8, start_y = 5.2*8, speed = 2, cat_speed = 1,
                  timer = 90, fscoremin = 100,
-                 cats = { {x = 19*8, y = 4*8, color = 1, dir = 1, want = 0},
-                          {x = 20*8, y = 9*8, color = 2, dir = 1, want = 1} },
                  resources = { fish = {0}, meat = {1} } }
     end
 
@@ -252,12 +246,6 @@ function make_level(level)
         return { cx = 0, cy = 0, width = 16, height = 16,
                  start_x = 64, start_y = 64, speed = 2, cat_speed = 1,
                  timer = 90, fscoremin = 100,
-                 cats = { {x = 26, y = 60},
-                          {x = 92, y = 40},
-                          {x = 86, y = 86},
-                          {x = 40, y = 80},
-                          {x = 36, y = 98},
-                          {x = 100, y = 106} },
                  -- fish in fridge #0, meat in fridge #1, cookie in cupboard #3
                  resources = { fish = {0}, meat = {1}, cookie = {3} } }
     end
@@ -323,12 +311,16 @@ end
 
 function compute_resources()
     -- find all bowls and fridges and sinks in the map and fill the resources table
-    targets, resources, wanted = {}, {}, {}
+    targets, resources, wanted, exits = {}, {}, {}, {}
     local nfridges, ncupboards = 0, 0
-    for j=desc.cy,desc.cy+desc.height do
-        for i=desc.cx,desc.cx+desc.width do
+    for j=desc.cy,desc.cy+desc.height-1 do
+        for i=desc.cx,desc.cx+desc.width-1 do
             local tile = mget(i,j)
-            if tile == 10 then -- this is a floor tile, i.e. an empty target
+            if (j==desc.cy or j==desc.cy+desc.height-1 or i==desc.cx or i==desc.cx+desc.width-1)
+               and not fget(tile, 0) then -- this is an entrance/exit tile
+                add(targets, { is_exit=true, cx=i+0.5, cy=j+0.5 })
+                add(exits, #targets)
+            elseif tile == 10 then -- this is a floor tile, i.e. an empty target
                 add(targets, { cx=i, cy=j })
             elseif tile == 11 then -- this is a bowl
                 add(targets, { is_bowl=true, cx=i+0.5, cy=j+0.5, color=4 })
@@ -595,9 +587,9 @@ end
 --
 
 function add_cat()
-    -- spawn a cat at a random location found in desc.cats
-    local startid = 1 + flr(rnd(#desc.cats))
-    local x, y = desc.cats[startid].x, desc.cats[startid].y
+    -- spawn a cat at a random exit/entrance
+    local exit = exits[1 + flr(rnd(#exits))]
+    local x, y = targets[exit].cx * 8, targets[exit].cy * 8
     if not has_cat_nearby(x, y)
        and max(abs(x - player.x), abs(y - player.y)) >= g_player_cat_dist then
         local cat = {x = x, y = y, color = flr(1 + rnd(3)), dir = rnd() > 0.5}
