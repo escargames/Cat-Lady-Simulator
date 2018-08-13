@@ -701,8 +701,8 @@ end
 
 function draw_pause()
     csprint("time out", 25, 9, 14)
-    cprint("score", 70, 7)
-    cprint(tostr(score).." / "..tostr(desc.fscoremin), 60, 7)
+    cprint("score", 60, 7)
+    cprint(tostr(score).." / "..tostr(desc.fscoremin), 70, 7)
     if score >= desc.fscoremin then
         palt(11,true)
         palt(0,false)
