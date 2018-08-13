@@ -283,7 +283,7 @@ end
 
 function compute_resources()
     -- find all bowls and fridges and sinks in the map and fill the resources table
-    targets, resources = {}, {}
+    targets, resources, wanted = {}, {}, {}
     local nfridges, ncupboards = 0, 0
     for j=desc.cy,desc.cy+desc.height do
         for i=desc.cx,desc.cx+desc.width do
@@ -293,17 +293,21 @@ function compute_resources()
             elseif tile == 50 then -- this is a fridge
                 if contains(desc.resources.meat, nfridges) then
                     add(resources, {x = i * 8 + 9, y = j * 8 - 3, xcol = i * 8 + 8, ycol = j * 8, color = 0})
+                    if not contains(wanted, 0) then add(wanted, 0) end
                 elseif contains(desc.resources.fish, nfridges) then
                     add(resources, {x = i * 8 + 9, y = j * 8 - 3, xcol = i * 8 + 8, ycol = j * 8, color = 1})
+                    if not contains(wanted, 1) then add(wanted, 1) end
                 end
                 nfridges += 1
             elseif tile == 26 then -- this is a sink
                 add(resources, {x = i * 8 + 9, y = j * 8 + 1, xcol = i * 8 + 8, ycol = j * 8 + 8, color = 2})
+                if not contains(wanted, 2) then add(wanted, 2) end
             elseif (tile == 36 or tile == 39) then -- this is a cupboard
                 if contains(desc.resources.cookie, ncupboards) then
                     -- add two resources with different collisions because i can't make it work well :-(
                     add(resources, {x = i * 8 + 8, y = j * 8 - 6, xcol = i * 8 + 8, ycol = j * 8 - 8, color = 3})
                     add(resources, {x = i * 8 + 8, y = j * 8 - 6, xcol = i * 8 + 8, ycol = j * 8, color = 3})
+                    if not contains(wanted, 3) then add(wanted, 3) end
                 end
                 ncupboards += 1
             end
@@ -427,7 +431,7 @@ end
 function has_cat_nearby(x, y)
     for i=1,#cats do
         local cat=cats[i]
-        if max(abs(cat.x - x), abs(cat.y - y)) < 8 then return true end
+        if max(abs(cat.x - x), abs(cat.y - y)) < 6 then return true end
     end
 end
 
@@ -551,14 +555,35 @@ function add_cat()
     local startid = 1 + flr(rnd(#desc.cats))
     local catdesc = desc.cats[startid]
     local cat = {x = catdesc.x, y = catdesc.y, color = flr(1 + rnd(3)), dir = rnd() > 0.5}
-    cat.want = flr(rnd(3))
+    -- choose a "wanted" resource at random from the level
+    cat.want = wanted[1 + flr(rnd(#wanted))]
     add(cats, cat)
 end
 
 function update_cats() 
     for i = 1,#cats do
         local cat = cats[i]
-        if cat.plan then
+        if cat.happy then
+            cat.happy -= 1/30
+            if cat.happy < 0 then
+                cat.happy = nil
+                cat.want = wanted[1 + flr(rnd(#wanted))]
+            end
+        elseif cat.eating then
+            -- if the cat is eating, it won't move
+            if cat.eating % 0.04 < 0.008 then
+                --sfx(8)
+            end
+            cat.eating += 0.008
+            if cat.eating > 1 then
+                targets[cat.plan.target].color = 4
+                score += 20
+                cat.want = nil
+                cat.eating = nil
+                cat.plan = nil
+                cat.happy = 2 + rnd(5)
+            end
+        elseif cat.plan then
             local moved = false
 
             -- if the cat has a plan, make it move in that direction
@@ -595,12 +620,18 @@ function update_cats()
                 cat.y = y
             end
 
+            -- did we get stuck? if so, remove the plan after a timeout
             if not moved then
                 cat.plan.timeout -= 1/30
             end
 
-            -- at the end of the plan, remove the plan
-            if cat.plan.timeout < 0 then
+            -- did we reach the destination?
+            local dx = cat.x - (targets[cat.plan.target].cx * 8 + 4)
+            local dy = cat.y - (targets[cat.plan.target].cy * 8 + 4)
+            if dx / 128 * dx + dy / 128 * dy < 6 * 6 / 128 then
+                cat.eating = 0
+            elseif cat.plan.timeout < 0 then
+                -- or maybe we timeouted
                 cat.plan = nil
             end
         else
@@ -669,6 +700,7 @@ function draw_world()
 end
 
 function draw_charge(x, y, t)
+    pal()
     x, y = x - 8, y - 8
     local col = 6 + rnd(2)
     for i=1,7 do if (i>t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
@@ -761,8 +793,13 @@ function draw_cats()
         end
         spr(72, cat.x - 8, cat.y - 12, 2, 2, dir_x(cat.dir))
 
-        -- if the cat wants something, draw a bubble
-        if cat.want then
+        if cat.happy then
+            spr(101, cat.x - 4, cat.y - 13 - 4 * abs(sin(cat.happy)))
+        elseif cat.eating then
+            -- if the cat is eating, draw the progress
+            draw_charge(cat.x, cat.y - 16, cat.eating)
+        elseif cat.want then
+            -- if the cat wants something, draw a bubble
             local x, y = cat.x - 8, cat.y - 22
             spr(64, x, y, 2, 2, cat.dir)
             palt(11, false)
