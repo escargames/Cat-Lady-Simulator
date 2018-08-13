@@ -666,11 +666,15 @@ function update_cats()
             -- did we reach the destination?
             local dx = cat.x - (targets[cat.plan.target].cx * 8 + 4)
             local dy = cat.y - (targets[cat.plan.target].cy * 8 + 4)
-            if (test_radius(dx, dy, g_cat_bowl_dist) < 0) and
-               targets[cat.plan.target].color == cat.want and
-               not targets[cat.plan.target].is_taken then
-                targets[cat.plan.target].is_taken = true
-                cat.eating = 0
+            if test_radius(dx, dy, g_cat_bowl_dist) < 0 then
+                if targets[cat.plan.target].is_bowl
+                   and not targets[cat.plan.target].is_taken
+                   and targets[cat.plan.target].color == cat.want then
+                    targets[cat.plan.target].is_taken = true
+                    cat.eating = 0
+                else
+                    cat.plan = nil
+                end
             elseif cat.plan.timeout < 0 then
                 -- or maybe we timeouted
                 cat.plan = nil
