@@ -91,9 +91,9 @@ end
 function ctimer(t)
     if t.min == 0 and (t.sec % 1 >= 29/30) then
         if t.sec < 1 then
-            -- TODO SFX: timeout sound!
+            -- todo sfx: timeout sound!
         elseif t.sec < 11 then
-            -- TODO SFX: stressful clock sounds!
+            -- todo sfx: stressful clock sounds!
         end
     end
 
@@ -425,7 +425,7 @@ function update_player()
     if (walk) then
         player.walk += 0.25
         if player.walk % 1 < 0.25 then
-            -- TODO SFX: walking sounds
+            -- todo sfx: walking sounds
         end
     end
     player.bob += 0.08
