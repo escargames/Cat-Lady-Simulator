@@ -148,7 +148,7 @@ function update_menu()
             player.y = 74
             grandmapos = 2
         elseif grandmapos == 2 then
-            player.y = 99
+            player.y = 94
             grandmapos = 3
             chooselevel = false
         end
@@ -251,7 +251,7 @@ function begin_play()
     player = {x = desc.start_x, y = desc.start_y, dir = 1, spd = desc.speed, bob = 0, walk = 0.2}
     cats = {}
 
-    score = 110
+    score = 160
     compute_resources()
     compute_paths()
 end
@@ -376,29 +376,30 @@ end
 function begin_pause()
     local des = make_level(0)
     player = {x = des.start_x, y = des.start_y, dir = 1, spd = des.speed, bob = 0, walk = 0.2}
+    level += 1
 end
 
 function update_pause()
     if score >= desc.fscoremin then
+        if levelsaved < level and level <= flevel then
+            levelsaved = level
+            dset(0, levelsaved)
+        end
+
         if btnp(4) then
-            if level == flevel then
+            if level > flevel then
                 state = "menu"
                 begin_menu()
             else
-                level += 1
                 state = "play"
                 begin_play()
-            end
-            if levelsaved < level then
-                levelsaved = level
-                dset(0, levelsaved)
             end
             sfx(5)
         end
 
         for i = 1,3 do
             if score > tscore[i] then
-                dset(level, i)
+                dset(level - 1, i)
             end
         end
 
@@ -662,7 +663,11 @@ function draw_menu()
     cosprint("simulator", 42, 30, 12, 12)
     cprint("play", 50, 7)
     cprint("choose level", 70, 7)
-    cprint("help", 95, 7)
+    if grandmapos == 2 and levelsaved != 0 then
+        cprint("help", 95, 7)
+    else
+        cprint("help", 90, 7)
+    end
 end
 
 function draw_chooselevel()
@@ -672,14 +677,14 @@ function draw_chooselevel()
         end
         if levelsaved > 0 then
             rect(64 - (levelsaved - 1)*10 + (selectlevel - 1)*20 - 3, 80-3, 64 - (levelsaved - 1)*10 + (selectlevel - 1)*20 + 5, 80+7, 14)
-        end
-
-        for i = 1,3 do
-        local colr = 5
-            if i <= dget(selectlevel) then
-                colr = 10
+        
+            for i = 1,3 do
+            local colr = 5
+                if i <= dget(selectlevel) then
+                    colr = 10
+                end
+            cosprint("★ ", 64 - 23 + (i - 1)*20, 60, 6, colr) 
             end
-        cosprint("★ ", 64 - 23 + (i - 1)*20, 60, 6, colr) 
         end
     end
 end
@@ -771,7 +776,7 @@ function draw_pause()
         spr(12, 48, 90, 4, 4)
         palt()
 
-        if level == flevel then
+        if level > flevel then
             cprint("you win", 50, 7)
         else cprint("next level", 50, 7)
         end
