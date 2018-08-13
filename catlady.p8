@@ -17,7 +17,7 @@ function _init()
     cartdata("cat_lady_simulator")
     state = "menu"
     flevel = 2
-    levelsaved = dget(1)
+    levelsaved = dget(0)
     begin_menu()
     pause_menu()
 end
@@ -181,12 +181,13 @@ function update_menu()
             selectlevel -= 1
             sfx(5)
         end
-        if btnp(4) then
+        if btnp(4) and levelsaved != 0 then
             level = selectlevel
             state = "play"
             begin_play()
             sfx(5)
         end
+
     elseif btnp(4) and grandmapos == 3 then
         level = -1
         state = "play"
@@ -221,7 +222,7 @@ function make_level(level)
                  start_x = 22*8, start_y = 5.2*8, speed = 2, cat_speed = 1,
                  timer = 90, fscoremin = 100,
                  cats = { {x = 19*8, y = 4*8, color = 1, dir = 1, want = 0},
-                          {x = 20*8, y = 8.5*8, color = 2, dir = 1, want = 1} },
+                          {x = 20*8, y = 9*8, color = 2, dir = 1, want = 1} },
                  resources = { fish = {0}, meat = {1} } }
     end
 
@@ -250,7 +251,7 @@ function begin_play()
     player = {x = desc.start_x, y = desc.start_y, dir = 1, spd = desc.speed, bob = 0, walk = 0.2}
     cats = {}
 
-    score = 0
+    score = 110
     compute_resources()
     compute_paths()
 end
@@ -386,10 +387,17 @@ function update_pause()
             end
             if levelsaved < level then
                 levelsaved = level
-                dset(1,levelsaved)
+                dset(0, levelsaved)
             end
             sfx(5)
         end
+
+        for i = 1,3 do
+            if score > tscore[i] then
+                dset(level, i)
+            end
+        end
+
     elseif btnp(4) then
         level = 0
         state = "menu"
@@ -634,6 +642,14 @@ function draw_chooselevel()
         if levelsaved > 0 then
             rect(64 - (levelsaved - 1)*10 + (selectlevel - 1)*20 - 3, 80-3, 64 - (levelsaved - 1)*10 + (selectlevel - 1)*20 + 5, 80+7, 14)
         end
+
+        for i = 1,3 do
+        local colr = 5
+            if i <= dget(selectlevel) then
+                colr = 10
+            end
+        cosprint("★ ", 64 - 23 + (i - 1)*20, 60, 6, colr) 
+        end
     end
 end
 
@@ -707,6 +723,14 @@ end
 
 function draw_pause()
     csprint("time out", 25, 9, 14)
+    for i = 1,3 do
+        local colr = 5
+        tscore = {desc.fscoremin, desc.fscoremin * 1.5, desc.fscoremin * 2}
+        if score >= tscore[i] then
+            colr = 10
+        end
+        cosprint("★ ", 64 - 23 + (i - 1)*20, 40, 6, colr) 
+    end
     cprint("score", 70, 7)
     cprint(tostr(score).." / "..tostr(desc.fscoremin), 80, 7)
     if score >= desc.fscoremin then
@@ -875,7 +899,7 @@ bbbbbbbbbbbbbbbb00f88887100011000c7cd100049997400000000000000000bbb0b0bb0b0bbbbb
 bbbbbbbbbbbbbbbb000777700000000000dd1000004444000000000000000000bbbbbbbbbbbbbbbb000000000000000000000000000000000000000000000000
 bbbbbbbbbbbbbbbbbbbb2222222bbbbbbbbbbbbbb00b00bb00000000000000000000000000000000000000000000000000000000000000000000000000000000
 bbbbbbdddbbbbbbbbbb288888882bbbbbbb22bbb07e0820b00000000000000000000000000000000000000000000000000000000000000000000000000000000
-bbbbbd6776bbbbbbbb28888888882bbbbb2882bb0788820b00000000000000000000000000000000000000000000000000000000000000000000000000000000
+bbbbbd6776bbbbbbbb28888888882bbbbb2882bb0e88820b00000000000000000000000000000000000000000000000000000000000000000000000000000000
 bbbbd677776bbbbbbb28888888882bbbbb8ff8bbb08820bb00000000000000000000000000000000000000000000000000000000000000000000000000000000
 bbb667777776bbbbbbb222888882bbbbbbeffebbbb020bbb00000000000000000000000000000000000000000000000000000000000000000000000000000000
 bbb6777fff66bbbbbbbbbb22222bbbbbbbbeebbbbbb0bbbb00000000000000000000000000000000000000000000000000000000000000000000000000000000
