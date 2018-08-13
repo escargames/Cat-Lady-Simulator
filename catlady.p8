@@ -251,13 +251,13 @@ end
 
 function compute_resources()
     -- find all bowls and fridges and sinks in the map and fill the resources table
-    bowls, resources = {}, {}
+    targets, resources = {}, {}
     local nfridges, ncupboards = 0, 0
     for j=desc.cy,desc.cy+desc.height do
         for i=desc.cx,desc.cx+desc.width do
             local tile = mget(i,j)
             if tile == 11 then -- this is a bowl
-                add(bowls, { cx=i+0.5, cy=j+0.5, color=4 })
+                add(targets, { is_bowl=true, cx=i+0.5, cy=j+0.5, color=4 })
             elseif tile == 50 then -- this is a fridge
                 if contains(desc.resources.meat, nfridges) then
                     add(resources, {x = i * 8 + 9, y = j * 8 - 3, xcol = i * 8 + 8, ycol = j * 8, color = 0})
@@ -312,9 +312,9 @@ end
 
 function compute_paths()
     -- find all bowls in the map and compute the shortest path to them
-    bowl_paths = {}
-    for i = 1, #bowls do
-        bowl_paths[i] = find_path(bowls[i].cx, bowls[i].cy)
+    paths = {}
+    for i = 1, #targets do
+        paths[i] = find_path(targets[i].cx, targets[i].cy)
     end
 end
 
@@ -449,14 +449,16 @@ function update_player()
 
     -- if putting something in a bowl...
     if btnp(4) and player.carry then
-        for i=1,#bowls do
-            local dx = povx - (bowls[i].cx * 8 + 4)
-            local dy = povy - (bowls[i].cy * 8 + 4)
-            if dx / 128 * dx + dy / 128 * dy < 8 * 8 / 128 then
-                sfx(7)
-                bowls[i].color = player.carry
-                player.carry = nil
-                break
+        for i=1,#targets do
+            if targets[i].is_bowl then
+                local dx = povx - (targets[i].cx * 8 + 4)
+                local dy = povy - (targets[i].cy * 8 + 4)
+                if dx / 128 * dx + dy / 128 * dy < 8 * 8 / 128 then
+                    sfx(7)
+                    targets[i].color = player.carry
+                    player.carry = nil
+                    break
+                end
             end
         end
     end
@@ -548,9 +550,9 @@ function update_cats()
             -- if it does not have a plan, maybe compute one
             if rnd() > 0.5 then
                 cat.plan = { dir = flr(rnd(5)), length = rnd(2) }
-                for i=1,#bowls do
-                    if bowls[i].color == cat.want then
-                        cat.plan.bowl, cat.plan.x, cat.plan.y = i, bowls[i].cx * 8 + 4, bowls[i].cy * 8 + 4
+                for i=1,#targets do
+                    if targets[i].is_bowl and targets[i].color == cat.want then
+                        cat.plan.bowl, cat.plan.x, cat.plan.y = i, targets[i].cx * 8 + 4, targets[i].cy * 8 + 4
                     end
                 end
             end
@@ -591,8 +593,11 @@ function draw_world()
     palt(0, false)
     map(desc.cx, desc.cy, desc.cx*8, desc.cy*8, desc.height, desc.width)
     palt(0, true)
-    foreach(bowls, function(b)
-        spr(66 + b.color, b.cx * 8, b.cy * 8)
+    foreach(targets, function(t)
+        if t.is_bowl then
+            spr(66 + t.color, t.cx * 8, t.cy * 8)
+        else
+        end
     end)
     foreach(resources, function(r)
         spr(82 + r.color, r.x - 4, r.y - 4)
@@ -683,8 +688,8 @@ function draw_cats()
 
         -- debug: if the cat has a plan, draw a line
         if cat.plan and cat.plan.bowl then
-            local col = 12 + cat.plan.bowl
-            local d = bowl_paths[cat.plan.bowl]
+            local col = 12 + rnd(4)
+            local d = paths[cat.plan.bowl]
             local cell = flr(cat.x / 8) + 128 * flr(cat.y / 8)
             while cell and d[cell] and d[cell] > 0 do
                 local nextcell = nil
@@ -695,7 +700,7 @@ function draw_cats()
                 if (nextcell) line(cell % 128 * 8 + 4, flr(cell / 128) * 8 + 4, nextcell % 128 * 8 + 4, flr(nextcell / 128) * 8 + 4, col)
                 cell = nextcell
             end
-            --line(cat.x, cat.y, cat.plan.x, cat.plan.y, rnd(15))
+            line(cat.x, cat.y, cat.plan.x, cat.plan.y, 11 + targets[cat.plan.bowl].color)
         end
     end)
     pal()
