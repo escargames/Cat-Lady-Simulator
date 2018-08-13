@@ -93,9 +93,9 @@ end
 function ctimer(t)
     if t.min == 0 and (t.sec % 1 >= 29/30) then
         if t.sec < 1 then
-            -- TODO SFX: timeout sound!
+            -- todo sfx: timeout sound!
         elseif t.sec < 11 then
-            -- TODO SFX: stressful clock sounds!
+            -- todo sfx: stressful clock sounds!
         end
     end
 
@@ -273,13 +273,13 @@ end
 
 function compute_resources()
     -- find all bowls and fridges and sinks in the map and fill the resources table
-    bowls, resources = {}, {}
+    targets, resources = {}, {}
     local nfridges, ncupboards = 0, 0
     for j=desc.cy,desc.cy+desc.height do
         for i=desc.cx,desc.cx+desc.width do
             local tile = mget(i,j)
             if tile == 11 then -- this is a bowl
-                add(bowls, { cx=i+0.5, cy=j+0.5, color=4 })
+                add(targets, { is_bowl=true, cx=i+0.5, cy=j+0.5, color=4 })
             elseif tile == 50 then -- this is a fridge
                 if contains(desc.resources.meat, nfridges) then
                     add(resources, {x = i * 8 + 9, y = j * 8 - 3, xcol = i * 8 + 8, ycol = j * 8, color = 0})
@@ -301,35 +301,46 @@ function compute_resources()
     end
 end
 
+function find_path(cx, cy)
+    local grid, tovisit, visited = {}, {}, {}
+    local dist = 0
+    local xmin, xmax = desc.cx * 8, (desc.cx + desc.width - 1) * 8
+    local ymin, ymax = desc.cy * 8, (desc.cy + desc.height - 1) * 8
+    add(tovisit, flr(cx) + 128 * flr(cy))
+    add(tovisit, flr(cx) + 128 * ceil(cy))
+    add(tovisit, ceil(cx) + 128 * flr(cy))
+    add(tovisit, ceil(cx) + 128 * ceil(cy))
+    while #tovisit > 0 do
+        -- store distance for all cells of the current depth
+        for j = 1, #tovisit do
+            grid[tovisit[j]] = dist
+            visited[tovisit[j]] = true
+        end
+        -- mark new cells to visit
+        local nxt = {}
+        for j = 1, #tovisit do
+            local cell = tovisit[j]
+            local x, y = cell % 128 * 8, flr(cell / 128) * 8
+            if (y > ymin) and not visited[cell - 128] and not wall(x, y - 8) then nxt[cell - 128] = true end
+            if (y < ymax) and not visited[cell + 128] and not wall(x, y + 8) then nxt[cell + 128] = true end
+            if (x > xmin) and not visited[cell - 1] and not wall(x - 8, y) then nxt[cell - 1] = true end
+            if (x < xmax) and not visited[cell + 1] and not wall(x + 8, y) then nxt[cell + 1] = true end
+        end
+        -- compute new list of cells to visit
+        tovisit = {}
+        for k, _ in pairs(nxt) do add(tovisit, k) end
+        dist += 1
+    end
+    --for k, v in pairs(grid) do printh('path['..tostr(k)..'] = '..tostr(v)) end
+    return grid
+end
+
 function compute_paths()
     -- find all bowls in the map and compute the shortest path to them
     paths = {}
-    for i = 1, #bowls do
-        local grid = {}
-        local dist, bcell = 0, flr(bowls[i].cx) + 128 * flr(bowls[i].cy)
-        local tovisit, visited = {bcell, bcell+1, bcell+128, bcell+129}, {}
-        while #tovisit > 0 do
-            -- store distance for all cells of the current depth
-            for j = 1, #tovisit do
-                grid[tovisit[j]] = dist
-                visited[tovisit[j]] = true
-            end
-            -- mark new cells to visit
-            local nxt = {}
-            for j = 1, #tovisit do
-                local cell = tovisit[j]
-                local x, y = cell % 128 * 8, flr(cell / 128) * 8
-                if y > desc.cy and not visited[cell - 128] and not wall(x, y - 8) then nxt[cell - 128] = true end
-                if y < desc.cy + desc.height - 1 and not visited[cell + 128] and not wall(x, y + 8) then nxt[cell + 128] = true end
-                if x > desc.cx and not visited[cell - 1] and not wall(x - 8, y) then nxt[cell - 1] = true end
-                if x < desc.cx + desc.width - 1 and not visited[cell + 1] and not wall(x + 8, y) then nxt[cell + 1] = true end
-            end
-            -- compute new list of cells to visit
-            tovisit = {}
-            for k, _ in pairs(nxt) do add(tovisit, k) end
-            dist += 1
-        end
-        paths[i] = grid
+    for i = 1, #targets do
+        --printh("find path for target "..tostr(i))
+        paths[i] = find_path(targets[i].cx, targets[i].cy)
     end
 end
 
@@ -440,7 +451,7 @@ function update_player()
     if (walk) then
         player.walk += 0.25
         if player.walk % 1 < 0.25 then
-            -- TODO SFX: walking sounds
+            -- todo sfx: walking sounds
         end
     end
     player.bob += 0.08
@@ -464,14 +475,16 @@ function update_player()
 
     -- if putting something in a bowl...
     if btnp(4) and player.carry then
-        for i=1,#bowls do
-            local dx = povx - (bowls[i].cx * 8 + 4)
-            local dy = povy - (bowls[i].cy * 8 + 4)
-            if dx / 128 * dx + dy / 128 * dy < 8 * 8 / 128 then
-                sfx(7)
-                bowls[i].color = player.carry
-                player.carry = nil
-                break
+        for i=1,#targets do
+            if targets[i].is_bowl then
+                local dx = povx - (targets[i].cx * 8 + 4)
+                local dy = povy - (targets[i].cy * 8 + 4)
+                if dx / 128 * dx + dy / 128 * dy < 8 * 8 / 128 then
+                    sfx(7)
+                    targets[i].color = player.carry
+                    player.carry = nil
+                    break
+                end
             end
         end
     end
@@ -563,9 +576,9 @@ function update_cats()
             -- if it does not have a plan, maybe compute one
             if rnd() > 0.5 then
                 cat.plan = { dir = flr(rnd(5)), length = rnd(2) }
-                for i=1,#bowls do
-                    if bowls[i].color == cat.want then
-                        cat.plan.bowl, cat.plan.x, cat.plan.y = i, bowls[i].cx * 8 + 4, bowls[i].cy * 8 + 4
+                for i=1,#targets do
+                    if targets[i].is_bowl and targets[i].color == cat.want then
+                        cat.plan.bowl, cat.plan.x, cat.plan.y = i, targets[i].cx * 8 + 4, targets[i].cy * 8 + 4
                     end
                 end
             end
@@ -607,12 +620,29 @@ function draw_world()
     palt(0, false)
     map(desc.cx, desc.cy, desc.cx*8, desc.cy*8, desc.height, desc.width)
     palt(0, true)
-    foreach(bowls, function(b)
-        spr(66 + b.color, b.cx * 8, b.cy * 8)
+    foreach(targets, function(t)
+        if t.is_bowl then
+            spr(66 + t.color, t.cx * 8, t.cy * 8)
+        else
+        end
     end)
     foreach(resources, function(r)
         spr(82 + r.color, r.x - 4, r.y - 4)
     end)
+end
+
+function draw_charge(x, y, t)
+    x, y = x - 8, y - 8
+    local col = 6 + rnd(2)
+    for i=1,7 do if (i>t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
+    spr(71, x + 8, y, 1, 1)
+    for i=1,7 do if (i<14-t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
+    spr(71, x + 8, y + 8, 1, 1, false, true)
+    for i=1,7 do if (i>t*28-14) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
+    spr(71, x, y + 8, 1, 1, true, true)
+    for i=1,7 do if (i<28-t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
+    spr(71, x, y, 1, 1, true)
+    pal()
 end
 
 function draw_grandma()
@@ -649,16 +679,7 @@ function draw_grandma()
     end
     -- display the charge widget
     if player.charge and player.charge.active then
-        local t, col = player.charge.progress, 6 + rnd(2)
-        local dx, dy = player.x - 8, player.y - 24
-        for i=1,7 do if (i>t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
-        spr(71, dx + 8, dy, 1, 1)
-        for i=1,7 do if (i<14-t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
-        spr(71, dx + 8, dy + 8, 1, 1, false, true)
-        for i=1,7 do if (i>t*28-14) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
-        spr(71, dx, dy + 8, 1, 1, true, true)
-        for i=1,7 do if (i<28-t*28) palt(i, true) palt(i+7, true) else pal(i,0) pal(i+7,col) end
-        spr(71, dx, dy, 1, 1, true)
+        draw_charge(player.x, player.y - 16, player.charge.progress)
     end
     pal()
 end
@@ -699,10 +720,12 @@ function draw_cats()
 
         -- debug: if the cat has a plan, draw a line
         if cat.plan and cat.plan.bowl then
-            local col = 12 + cat.plan.bowl
+            --printh("cat has a plan for target "..tostr(cat.plan.bowl).." at ("..tostr(cat.plan.x)..","..tostr(cat.plan.y)..")")
+            local col = 12 + rnd(4)
             local d = paths[cat.plan.bowl]
             local cell = flr(cat.x / 8) + 128 * flr(cat.y / 8)
-            while cell and d[cell] and d[cell] > 0 do
+            --printh("  current cell "..tostr(cell)..": dist "..tostr(d[cell]))
+            while cell and d[cell] and (d[cell] > 0) do
                 local nextcell = nil
                 if ((d[cell + 1] or 1000) < d[cell]) nextcell = cell + 1
                 if ((d[cell - 1] or 1000) < d[cell]) nextcell = cell - 1
@@ -711,7 +734,7 @@ function draw_cats()
                 if (nextcell) line(cell % 128 * 8 + 4, flr(cell / 128) * 8 + 4, nextcell % 128 * 8 + 4, flr(nextcell / 128) * 8 + 4, col)
                 cell = nextcell
             end
-            --line(cat.x, cat.y, cat.plan.x, cat.plan.y, rnd(15))
+            line(cat.x, cat.y, cat.plan.x, cat.plan.y, 11 + targets[cat.plan.bowl].color)
         end
     end)
     pal()
