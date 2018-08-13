@@ -132,20 +132,20 @@ end
 function update_menu()
     update_cats()
     if btnp(3) then
-        player.y = 74
+        player.y = 84
         sfx(5)
     elseif btnp(2) then
-        player.y = 54
+        player.y = 64
         chooselevel = false
         sfx(5)
     end
 
-    if btnp(4) and player.y == 54 then
+    if btnp(4) and player.y == 64 then
         level = 1
         state = "play"
         begin_play()
         sfx(5)
-    elseif player.y == 74 then
+    elseif player.y == 84 then
         chooselevel = true
         if selectlevel < flevel and btnp(1) then
             selectlevel += 1
@@ -179,7 +179,7 @@ end
 function make_level(level)
     if level == 0 then
         return { cx = 0, cy = 48, width = 16, height = 16,
-                 start_x = 28, start_y = 54, speed = 2,
+                 start_x = 28, start_y = 64, speed = 2,
                  cats = {{x = 64, y = 110}},
                  resources = {} }
     end
@@ -540,17 +540,19 @@ function draw_background()
 end
 
 function draw_menu()
-    csprint("ldjam42", 25, 12, 14)
-    cprint("play", 50, 7)
-    cprint("choose level", 70, 7)
+    cosprint("cat", 16, 22, 20, 14)
+    cosprint("lady", 62, 22, 20, 14)
+    cosprint("simulator", 42, 42, 12, 12)
+    cprint("play", 60, 7)
+    cprint("choose level", 80, 7)
 end
 
 function draw_chooselevel()
     if chooselevel then
         for i = 1, flevel do
-            cosprint(tostr(i), 64 - (flevel - 1)*10 + (i - 1)*20, 80, 6, 7)
+            cosprint(tostr(i), 64 - (flevel - 1)*10 + (i - 1)*20, 90, 6, 7)
         end
-        rect(64 - (flevel - 1)*10 + (selectlevel - 1)*20 - 3, 80-3, 64 - (flevel - 1)*10 + (selectlevel - 1)*20 + 5, 80+7, 14)
+        rect(64 - (flevel - 1)*10 + (selectlevel - 1)*20 - 3, 90-3, 64 - (flevel - 1)*10 + (selectlevel - 1)*20 + 5, 90+7, 14)
     end
 end
 
