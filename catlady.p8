@@ -267,7 +267,7 @@ end
 
 -- check that dx*dx + dy*dy < r*r
 function test_radius(dx, dy, r)
-    return dx / 256 * dx + dy / 256 * dx - r / 256 * r
+    return dx / 256 * dx + dy / 256 * dy - r / 256 * r
 end
 
 function begin_play()
