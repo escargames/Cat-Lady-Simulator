@@ -1,6 +1,7 @@
 pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
+--cat lady simulator
 --by niarkou & sam
 
 config = {
@@ -12,8 +13,6 @@ config = {
 --
 -- some constants
 --
-g_cat_spawn_time = 15 -- spawn a cat every 15 seconds
-
 g_player_cat_dist = 6
 g_player_res_dist = 6
 g_cat_bowl_dist = 6
@@ -233,28 +232,28 @@ function make_level(level)
     if level == 1 then
         return { cx = 28, cy = 0, width = 10, height = 10,
                  start_x = 33*8, start_y = 9*8, speed = 2, cat_speed = 1,
-                 timer = 45, fscoremin = 100,
+                 timer = 45, spawn_time = 15, fscoremin = 70,
                  resources = { fish = {0} } }
     end
 
     if level == 2 then
         return { cx = 16, cy = 0, width = 12, height = 11,
                  start_x = 22*8, start_y = 5.2*8, speed = 2, cat_speed = 1,
-                 timer = 60, fscoremin = 150,
+                 timer = 60, spawn_time = 15, fscoremin = 80,
                  resources = { fish = {0}, meat = {1} } }
     end
 
     if level == 3 then
         return { cx = 38, cy = 0, width = 12, height = 12,
                  start_x = 42*8, start_y = 24, speed = 2, cat_speed = 1,
-                 timer = 90, fscoremin = 200,
+                 timer = 90, spawn_time = 10, fscoremin = 150,
                  resources = { fish = {0}, meat = {1} } }
     end
 
     if level == 4 then
         return { cx = 0, cy = 0, width = 16, height = 16,
                  start_x = 64, start_y = 64, speed = 2, cat_speed = 1,
-                 timer = 120, fscoremin = 250,
+                 timer = 120, spawn_time = 10, fscoremin = 250,
                  -- fish in fridge #0, meat in fridge #1, cookie in cupboard #3
                  resources = { fish = {0}, meat = {1}, cookie = {3} } }
     end
@@ -295,11 +294,11 @@ function update_play()
     update_player()
     update_cats()
 
-    if level >= 1 then
+    if desc.spawn_time then
         cats_timer -= 1/30
         if cats_timer <= 0 then
             cats_wanted += 1
-            cats_timer += g_cat_spawn_time
+            cats_timer += desc.spawn_time
         end
         if (#cats < cats_wanted) add_cat()
     end
