@@ -390,6 +390,7 @@ function update_player()
 
     -- did the user throw something away?
     if btnp(5) and player.carry then
+        -- TODO SFX: when we throw away the resource we were carrying
         player.throw = {color=player.carry, x=player.x, y=player.y-11, dir=dir_x(player.dir)}
         player.carry = nil
     end
@@ -405,6 +406,7 @@ function update_player()
             local dx = povx - (bowls[i].cx * 8 + 4)
             local dy = povy - (bowls[i].cy * 8 + 4)
             if dx / 128 * dx + dy / 128 * dy < 8 * 8 / 128 then
+                -- TODO SFX: when we drop the resource into a bowl
                 bowls[i].color = player.carry
                 player.carry = nil
                 break
@@ -419,11 +421,13 @@ function update_player()
             local dy = povy - resources[i].ycol
             if dx / 128 * dx + dy / 128 * dy < 6 * 6 / 128 then
                 if not player.charge or player.charge.id != i then
+                    -- TODO SFX: when we start acquiring a resource from a fridge
                     player.charge = {id=i, active=true, progress=0}
                 else
                     player.charge.active = true
                     player.charge.progress += 0.015
                     if player.charge.progress > 1 then
+                        -- TODO SFX: when the resource is obtained from the fridge
                         player.carry = resources[i].color
                         player.charge = nil
                     end
