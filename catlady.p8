@@ -423,7 +423,7 @@ end
 function has_cat_nearby(x, y)
     for i=1,#cats do
         local cat=cats[i]
-        if max(abs(cat.x - x), abs(cat.y - y)) < 8 then return true end
+        if max(abs(cat.x - x), abs(cat.y - y)) < 6 then return true end
     end
 end
 
