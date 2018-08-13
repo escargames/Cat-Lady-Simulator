@@ -14,7 +14,7 @@ config = {
 --
 
 function _init()
-    cartdata("ldjam42")
+    cartdata("cat_lady_simulator")
     state = "menu"
     flevel = 2
     levelsaved = dget(1)
