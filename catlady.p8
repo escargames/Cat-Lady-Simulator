@@ -555,15 +555,25 @@ end
 function update_cats() 
     for i = 1,#cats do
         local cat = cats[i]
-        if cat.eating then
+        if cat.happy then
+            cat.happy -= 1/30
+            if cat.happy < 0 then
+                cat.happy = nil
+                cat.want = wanted[1 + flr(rnd(#wanted))]
+            end
+        elseif cat.eating then
             -- if the cat is eating, it won't move
             if cat.eating % 0.04 < 0.008 then
                 --sfx(8)
             end
             cat.eating += 0.008
             if cat.eating > 1 then
+                targets[cat.plan.target].color = 4
+                score += 20
                 cat.want = nil
                 cat.eating = nil
+                cat.plan = nil
+                cat.happy = 2 + rnd(5)
             end
         elseif cat.plan then
             local moved = false
@@ -607,16 +617,13 @@ function update_cats()
                 cat.plan.timeout -= 1/30
             end
 
-            -- at the end of the plan, remove the plan
-            if cat.plan.timeout < 0 then
-                cat.plan = nil
-            end
-
             -- did we reach the destination?
             local dx = cat.x - (targets[cat.plan.target].cx * 8 + 4)
             local dy = cat.y - (targets[cat.plan.target].cy * 8 + 4)
             if dx / 128 * dx + dy / 128 * dy < 6 * 6 / 128 then
                 cat.eating = 0
+            elseif cat.plan.timeout < 0 then
+                -- or maybe we timeouted
                 cat.plan = nil
             end
         else
@@ -762,7 +769,9 @@ function draw_cats()
         end
         spr(72, cat.x - 8, cat.y - 12, 2, 2, dir_x(cat.dir))
 
-        if cat.eating then
+        if cat.happy then
+            spr(101, cat.x - 4, cat.y - 13 - 4 * abs(sin(cat.happy)))
+        elseif cat.eating then
             -- if the cat is eating, draw the progress
             draw_charge(cat.x, cat.y - 16, cat.eating)
         elseif cat.want then
