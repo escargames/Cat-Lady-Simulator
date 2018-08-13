@@ -12,6 +12,8 @@ config = {
 --
 -- some constants
 --
+g_cat_spawn_time = 15 -- spawn a cat every 15 seconds
+
 g_player_cat_dist = 6
 g_player_res_dist = 6
 g_cat_bowl_dist = 6
@@ -290,6 +292,9 @@ function begin_play()
     player = {x = desc.start_x, y = desc.start_y, dir = 1, spd = desc.speed, bob = 0, walk = 0.2}
     cats = {}
 
+    cats_timer = 0
+    cats_wanted = 0
+
     score = 0
     compute_resources()
     compute_paths()
@@ -302,9 +307,17 @@ function update_play()
     if btnp(0, 1) then score += 50 end
     -- set timer to 5 seconds by pressing f
     if btnp(1, 1) then timer = {min=0,sec=5} end
+
     update_score()
     update_player()
     update_cats()
+
+    cats_timer -= 1/30
+    if cats_timer < 0 then
+        cats_wanted += 1
+        cats_timer += g_cat_spawn_time
+    end
+    if (#cats < cats_wanted) add_cat()
 end
 
 function update_time()
@@ -598,10 +611,10 @@ end
 function add_cat()
     -- spawn a cat at a random location found in desc.cats
     local startid = 1 + flr(rnd(#desc.cats))
-    local catdesc = desc.cats[startid]
-    if not has_cat_nearby(catdesc.x, catdesc.y) then
-        local cat = {x = catdesc.x, y = catdesc.y, color = flr(1 + rnd(3)), dir = rnd() > 0.5}
-        --cat.want = wanted[1 + flr(rnd(#wanted))]
+    local x, y = desc.cats[startid].x, desc.cats[startid].y
+    if not has_cat_nearby(x, y)
+       and max(abs(x - player.x), abs(y - player.y)) >= g_player_cat_dist then
+        local cat = {x = x, y = y, color = flr(1 + rnd(3)), dir = rnd() > 0.5}
         add(cats, cat)
     end
 end
@@ -881,25 +894,6 @@ function draw_cats()
             palt(11, false)
             palt(0, true)
             spr(82 + cat.want, x + 4, y + 1, 1, 1, dir_x(cat.dir))
-        end
-
-        -- debug: if the cat has a plan, draw a line
-        if cat.plan and cat.plan.target then
-            --printh("cat has a plan for target "..tostr(cat.plan.target).." at ("..tostr(cat.plan.x)..","..tostr(cat.plan.y)..")")
-            local col = 12 + rnd(4)
-            local d = paths[cat.plan.target]
-            local cell = flr(cat.x / 8) + 128 * flr(cat.y / 8)
-            --printh("  current cell "..tostr(cell)..": dist "..tostr(d[cell]))
-            while cell and d[cell] and (d[cell] > 0) do
-                local nextcell = nil
-                if ((d[cell + 1] or 1000) < d[cell]) nextcell = cell + 1
-                if ((d[cell - 1] or 1000) < d[cell]) nextcell = cell - 1
-                if ((d[cell + 128] or 1000) < d[cell]) nextcell = cell + 128
-                if ((d[cell - 128] or 1000) < d[cell]) nextcell = cell - 128
-                --if (nextcell) line(cell % 128 * 8 + 4, flr(cell / 128) * 8 + 4, nextcell % 128 * 8 + 4, flr(nextcell / 128) * 8 + 4, col)
-                cell = nextcell
-            end
-            --line(cat.x, cat.y, cat.plan.x, cat.plan.y, col)
         end
     end)
     pal()
