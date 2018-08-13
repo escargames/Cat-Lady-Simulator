@@ -396,7 +396,7 @@ function update_player()
 
     -- did the user throw something away?
     if btnp(5) and player.carry then
-        -- TODO SFX: when we throw away the resource we were carrying
+        sfx(6)
         player.throw = {color=player.carry, x=player.x, y=player.y-11, dir=dir_x(player.dir)}
         player.carry = nil
     end
@@ -412,7 +412,7 @@ function update_player()
             local dx = povx - (bowls[i].cx * 8 + 4)
             local dy = povy - (bowls[i].cy * 8 + 4)
             if dx / 128 * dx + dy / 128 * dy < 8 * 8 / 128 then
-                -- TODO SFX: when we drop the resource into a bowl
+                sfx(7)
                 bowls[i].color = player.carry
                 player.carry = nil
                 break
@@ -427,13 +427,13 @@ function update_player()
             local dy = povy - resources[i].ycol
             if dx / 128 * dx + dy / 128 * dy < 6 * 6 / 128 then
                 if not player.charge or player.charge.id != i then
-                    -- TODO SFX: when we start acquiring a resource from a fridge
+                    sfx(8)
                     player.charge = {id=i, active=true, progress=0}
                 else
                     player.charge.active = true
                     player.charge.progress += 0.015
                     if player.charge.progress > 1 then
-                        -- TODO SFX: when the resource is obtained from the fridge
+                        sfx(9)
                         player.carry = resources[i].color
                         player.charge = nil
                     end
@@ -855,6 +855,10 @@ __sfx__
 011e000021015250152d0252d025080152d025210152c0152d0152d01521015280152d0152d015210152101528005280052d0052d005260042600126001260050000000000000000000000000000000000000000
 000f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000100001401016020180201a0201b0201e0202102025020290202c0102e010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000200002b554255511d55117551135410e5310952500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0001000027514295212b5312e5312b531295312753124531225311f5311d5311b5211851500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000300001503418031075010750107501075010750107501075010750500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0004000027050220501d0501b0501d050220502905030050370500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __music__
 01 01004044
 02 04020344
