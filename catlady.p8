@@ -456,10 +456,11 @@ function wall_area(x,y,w,h)
         wall(x+w,y+h)
 end
 
-function has_cat_nearby(x, y)
+function has_cat_nearby(x, y, cat_to_ignore)
     for i=1,#cats do
         local cat=cats[i]
-        if max(abs(cat.x - x), abs(cat.y - y)) < g_player_cat_dist then return true end
+        local dx, dy = cat.x - x, cat.y - y
+        if cat != cat_to_ignore and (test_radius(dx, dy, g_player_cat_dist) < 0) then return true end
     end
 end
 
@@ -633,7 +634,8 @@ function update_cats()
                 x += desc.cat_speed
             end
 
-            if not wall_area(x, cat.y, 3, 3) and
+            --if not wall_area(x, cat.y, 3, 3) and
+            if not wall_area(x, cat.y, 3, 3) and not has_cat_nearby(x, cat.y, cat) and
                max(abs(x - player.x), abs(cat.y - player.y)) >= g_player_cat_dist then
                 moved = true
                 cat.x = x
@@ -646,7 +648,8 @@ function update_cats()
                 y += desc.cat_speed
             end
 
-            if not wall_area(cat.x, y, 3, 3) and
+            --if not wall_area(cat.x, y, 3, 3) and
+            if not wall_area(cat.x, y, 3, 3) and not has_cat_nearby(cat.x, y, cat) and
                max(abs(cat.x - player.x), abs(y - player.y)) >= g_player_cat_dist then
                 moved = true
                 cat.y = y
