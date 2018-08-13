@@ -12,7 +12,9 @@ config = {
 --
 -- some constants
 --
-g_player_cat_col = 6
+g_player_cat_dist = 6
+g_player_res_dist = 6
+g_cat_bowl_dist = 6
 
 g_sfx_acquiring = 8
 g_sfx_acquired = 9
@@ -451,7 +453,7 @@ end
 function has_cat_nearby(x, y)
     for i=1,#cats do
         local cat=cats[i]
-        if max(abs(cat.x - x), abs(cat.y - y)) < g_player_cat_col then return true end
+        if max(abs(cat.x - x), abs(cat.y - y)) < g_player_cat_dist then return true end
     end
 end
 
@@ -517,7 +519,7 @@ function update_player()
     -- if putting something in a bowl...
     if btnp(4) and player.carry then
         for i=1,#targets do
-            if targets[i].is_bowl then
+            if targets[i].is_bowl and not targets[i].is_taken then
                 local dx = povx - (targets[i].cx * 8 + 4)
                 local dy = povy - (targets[i].cy * 8 + 4)
                 if dx / 128 * dx + dy / 128 * dy < 8 * 8 / 128 then
@@ -535,7 +537,7 @@ function update_player()
         for i=1,#resources do
             local dx = povx - resources[i].xcol
             local dy = povy - resources[i].ycol
-            if dx / 128 * dx + dy / 128 * dy < 6 * 6 / 128 then
+            if dx / 128 * dx + dy / 128 * dy < g_player_res_dist / 128 * g_player_res_dist then
                 if not player.charge or player.charge.id != i then
                     player.charge = {id=i, active=true, progress=0}
                 else
@@ -598,6 +600,7 @@ function update_cats()
             if cat.eating > 1 then
                 sfx(g_sfx_acquired)
                 targets[cat.plan.target].color = 4
+                targets[cat.plan.target].is_taken = false
                 score += 20
                 cat.want = nil
                 cat.eating = nil
@@ -625,7 +628,7 @@ function update_cats()
             end
 
             if not wall_area(x, cat.y, 3, 3) and
-               max(abs(x - player.x), abs(cat.y - player.y)) >= g_player_cat_col then
+               max(abs(x - player.x), abs(cat.y - player.y)) >= g_player_cat_dist then
                 moved = true
                 cat.x = x
             end
@@ -638,20 +641,21 @@ function update_cats()
             end
 
             if not wall_area(cat.x, y, 3, 3) and
-               max(abs(cat.x - player.x), abs(y - player.y)) >= g_player_cat_col then
+               max(abs(cat.x - player.x), abs(y - player.y)) >= g_player_cat_dist then
                 moved = true
                 cat.y = y
             end
 
-            -- did we get stuck? if so, remove the plan after a timeout
-            if not moved then
-                cat.plan.timeout -= 1/30
-            end
+            -- always decrease the timeout so that we can recompute the trajectory
+            cat.plan.timeout -= 1/30
 
             -- did we reach the destination?
             local dx = cat.x - (targets[cat.plan.target].cx * 8 + 4)
             local dy = cat.y - (targets[cat.plan.target].cy * 8 + 4)
-            if dx / 128 * dx + dy / 128 * dy < 6 * 6 / 128 then
+            if dx / 128 * dx + dy / 128 * dy < g_cat_bowl_dist / 128 * g_cat_bowl_dist / 128 and
+               targets[cat.plan.target].color == cat.want and
+               not targets[cat.plan.target].is_taken then
+                targets[cat.plan.target].is_taken = true
                 cat.eating = 0
             elseif cat.plan.timeout < 0 then
                 -- or maybe we timeouted
@@ -660,8 +664,8 @@ function update_cats()
         else
             -- if it does not have a plan, maybe compute one
             for i=1,#targets do
-                if targets[i].is_bowl and targets[i].color == cat.want then
-                    cat.plan = { target = i, timeout = rnd(2) }
+                if targets[i].is_bowl and targets[i].color == cat.want and not targets[i].is_taken then
+                    cat.plan = { target = i, timeout = 2 + rnd(2) }
                     break
                 end
             end
