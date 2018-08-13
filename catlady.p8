@@ -279,35 +279,42 @@ function compute_resources()
     end
 end
 
+function find_path(cx, cy)
+    local grid, tovisit, visited = {}, {}, {}
+    local dist = 0
+    add(tovisit, flr(cx) + 128 * flr(cy))
+    add(tovisit, flr(cx) + 128 * ceil(cy))
+    add(tovisit, ceil(cx) + 128 * flr(cy))
+    add(tovisit, ceil(cx) + 128 * ceil(cy))
+    while #tovisit > 0 do
+        -- store distance for all cells of the current depth
+        for j = 1, #tovisit do
+            grid[tovisit[j]] = dist
+            visited[tovisit[j]] = true
+        end
+        -- mark new cells to visit
+        local nxt = {}
+        for j = 1, #tovisit do
+            local cell = tovisit[j]
+            local x, y = cell % 128 * 8, flr(cell / 128) * 8
+            if y > desc.cy and not visited[cell - 128] and not wall(x, y - 8) then nxt[cell - 128] = true end
+            if y < desc.cy + desc.height - 1 and not visited[cell + 128] and not wall(x, y + 8) then nxt[cell + 128] = true end
+            if x > desc.cx and not visited[cell - 1] and not wall(x - 8, y) then nxt[cell - 1] = true end
+            if x < desc.cx + desc.width - 1 and not visited[cell + 1] and not wall(x + 8, y) then nxt[cell + 1] = true end
+        end
+        -- compute new list of cells to visit
+        tovisit = {}
+        for k, _ in pairs(nxt) do add(tovisit, k) end
+        dist += 1
+    end
+    return grid
+end
+
 function compute_paths()
     -- find all bowls in the map and compute the shortest path to them
-    paths = {}
+    bowl_paths = {}
     for i = 1, #bowls do
-        local grid = {}
-        local dist, bcell = 0, flr(bowls[i].cx) + 128 * flr(bowls[i].cy)
-        local tovisit, visited = {bcell, bcell+1, bcell+128, bcell+129}, {}
-        while #tovisit > 0 do
-            -- store distance for all cells of the current depth
-            for j = 1, #tovisit do
-                grid[tovisit[j]] = dist
-                visited[tovisit[j]] = true
-            end
-            -- mark new cells to visit
-            local nxt = {}
-            for j = 1, #tovisit do
-                local cell = tovisit[j]
-                local x, y = cell % 128 * 8, flr(cell / 128) * 8
-                if y > desc.cy and not visited[cell - 128] and not wall(x, y - 8) then nxt[cell - 128] = true end
-                if y < desc.cy + desc.height - 1 and not visited[cell + 128] and not wall(x, y + 8) then nxt[cell + 128] = true end
-                if x > desc.cx and not visited[cell - 1] and not wall(x - 8, y) then nxt[cell - 1] = true end
-                if x < desc.cx + desc.width - 1 and not visited[cell + 1] and not wall(x + 8, y) then nxt[cell + 1] = true end
-            end
-            -- compute new list of cells to visit
-            tovisit = {}
-            for k, _ in pairs(nxt) do add(tovisit, k) end
-            dist += 1
-        end
-        paths[i] = grid
+        bowl_paths[i] = find_path(bowls[i].cx, bowls[i].cy)
     end
 end
 
@@ -677,7 +684,7 @@ function draw_cats()
         -- debug: if the cat has a plan, draw a line
         if cat.plan and cat.plan.bowl then
             local col = 12 + cat.plan.bowl
-            local d = paths[cat.plan.bowl]
+            local d = bowl_paths[cat.plan.bowl]
             local cell = flr(cat.x / 8) + 128 * flr(cat.y / 8)
             while cell and d[cell] and d[cell] > 0 do
                 local nextcell = nil
