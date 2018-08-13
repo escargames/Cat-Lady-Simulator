@@ -89,6 +89,14 @@ end
 -- cool timer
 
 function ctimer(t)
+    if t.min == 0 and (t.sec % 1 >= 29/30) then
+        if t.sec < 1 then
+            -- TODO SFX: timeout sound!
+        elseif t.sec < 11 then
+            -- TODO SFX: stressful clock sounds!
+        end
+    end
+
     if t.sec > 0 then
         t.sec -= 1/30
     end
@@ -407,7 +415,12 @@ function update_player()
         player.y = y
     end
 
-    if (walk) player.walk += 0.25
+    if (walk) then
+        player.walk += 0.25
+        if player.walk % 1 < 0.25 then
+            -- TODO SFX: walking sounds
+        end
+    end
     player.bob += 0.08
 
     -- point of view (depends on the facing direction)
