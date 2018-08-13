@@ -17,6 +17,7 @@ function _init()
     cartdata("ldjam42")
     state = "menu"
     flevel = 2
+    levelsaved = dget(1)
     begin_menu()
     pause_menu()
 end
@@ -147,7 +148,7 @@ function update_menu()
         sfx(5)
     elseif player.y == 74 then
         chooselevel = true
-        if selectlevel < flevel and btnp(1) then
+        if selectlevel < levelsaved and btnp(1) then
             selectlevel += 1
             sfx(5)
         end
@@ -333,11 +334,17 @@ function update_pause()
                 state = "play"
                 begin_play()
             end
+            if levelsaved < level then
+                levelsaved = level
+                dset(1,levelsaved)
+            end
+            sfx(5)
         end
     elseif btnp(4) then
         level = 0
         state = "menu"
         begin_menu()
+        sfx(5)
     end 
     player.bob += 0.08
 end
@@ -547,10 +554,12 @@ end
 
 function draw_chooselevel()
     if chooselevel then
-        for i = 1, flevel do
-            cosprint(tostr(i), 64 - (flevel - 1)*10 + (i - 1)*20, 80, 6, 7)
+        for i = 1, levelsaved do
+            cosprint(tostr(i), 64 - (levelsaved - 1)*10 + (i - 1)*20, 80, 6, 7)
         end
-        rect(64 - (flevel - 1)*10 + (selectlevel - 1)*20 - 3, 80-3, 64 - (flevel - 1)*10 + (selectlevel - 1)*20 + 5, 80+7, 14)
+        if levelsaved > 0 then
+            rect(64 - (levelsaved - 1)*10 + (selectlevel - 1)*20 - 3, 80-3, 64 - (levelsaved - 1)*10 + (selectlevel - 1)*20 + 5, 80+7, 14)
+        end
     end
 end
 
