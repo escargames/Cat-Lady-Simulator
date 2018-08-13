@@ -27,7 +27,7 @@ g_sfx_acquired = 13
 function _init()
     cartdata("cat_lady_simulator")
     state = "menu"
-    flevel = 2
+    flevel = 3
     levelsaved = dget(0)
     begin_menu()
     pause_menu()
