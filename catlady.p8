@@ -881,25 +881,6 @@ function draw_cats()
             palt(0, true)
             spr(82 + cat.want, x + 4, y + 1, 1, 1, dir_x(cat.dir))
         end
-
-        -- debug: if the cat has a plan, draw a line
-        if cat.plan and cat.plan.target then
-            --printh("cat has a plan for target "..tostr(cat.plan.target).." at ("..tostr(cat.plan.x)..","..tostr(cat.plan.y)..")")
-            local col = 12 + rnd(4)
-            local d = paths[cat.plan.target]
-            local cell = flr(cat.x / 8) + 128 * flr(cat.y / 8)
-            --printh("  current cell "..tostr(cell)..": dist "..tostr(d[cell]))
-            while cell and d[cell] and (d[cell] > 0) do
-                local nextcell = nil
-                if ((d[cell + 1] or 1000) < d[cell]) nextcell = cell + 1
-                if ((d[cell - 1] or 1000) < d[cell]) nextcell = cell - 1
-                if ((d[cell + 128] or 1000) < d[cell]) nextcell = cell + 128
-                if ((d[cell - 128] or 1000) < d[cell]) nextcell = cell - 128
-                --if (nextcell) line(cell % 128 * 8 + 4, flr(cell / 128) * 8 + 4, nextcell % 128 * 8 + 4, flr(nextcell / 128) * 8 + 4, col)
-                cell = nextcell
-            end
-            --line(cat.x, cat.y, cat.plan.x, cat.plan.y, col)
-        end
     end)
     pal()
 end
