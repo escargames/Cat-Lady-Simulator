@@ -231,28 +231,28 @@ function make_level(level)
     if level == 1 then
         return { cx = 28, cy = 0, width = 10, height = 10,
                  start_x = 33*8, start_y = 9*8, speed = 2, cat_speed = 1,
-                 timer = 90, fscoremin = 100,
+                 timer = 45, fscoremin = 100,
                  resources = { fish = {0} } }
     end
 
     if level == 2 then
         return { cx = 16, cy = 0, width = 12, height = 11,
                  start_x = 22*8, start_y = 5.2*8, speed = 2, cat_speed = 1,
-                 timer = 90, fscoremin = 100,
+                 timer = 60, fscoremin = 150,
                  resources = { fish = {0}, meat = {1} } }
     end
 
     if level == 3 then
         return { cx = 38, cy = 0, width = 12, height = 12,
                  start_x = 42*8, start_y = 24, speed = 2, cat_speed = 1,
-                 timer = 90, fscoremin = 100,
+                 timer = 90, fscoremin = 200,
                  resources = { fish = {0}, meat = {1} } }
     end
 
     if level == 4 then
         return { cx = 0, cy = 0, width = 16, height = 16,
                  start_x = 64, start_y = 64, speed = 2, cat_speed = 1,
-                 timer = 90, fscoremin = 100,
+                 timer = 120, fscoremin = 250,
                  -- fish in fridge #0, meat in fridge #1, cookie in cupboard #3
                  resources = { fish = {0}, meat = {1}, cookie = {3} } }
     end
