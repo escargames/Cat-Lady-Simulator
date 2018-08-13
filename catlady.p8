@@ -760,7 +760,7 @@ end
 
 function draw_world()
     palt(0, false)
-    map(desc.cx, desc.cy, desc.cx*8, desc.cy*8, desc.height, desc.width)
+    map(desc.cx, desc.cy, desc.cx*8, desc.cy*8, desc.width, desc.height)
     palt(0, true)
     foreach(targets, function(t)
         if t.is_bowl then
